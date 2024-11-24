@@ -17,6 +17,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.zenwaves.ai",
+      // "infoPlist": {
+      //   "UIBackgroundModes": ["audio"]
+      // },
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-4165595262807711~6792012396"
       }
@@ -52,6 +55,46 @@
           "androidAppId": "ca-app-pub-4165595262807711~4716615029",
           "iosAppId": "ca-app-pub-4165595262807711~6792012396",
           "userTrackingDescription": "此标识符将用于向您投放个性化广告"
+        }
+      ],
+      // [
+      //   "expo-barcode-scanner",
+      //   {
+      //     "cameraPermission": "Allow $(PRODUCT_NAME) to access camera."
+      //   }
+      // ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "允许应用使用相机扫描二维码",
+          "microphonePermission": "允许应用使用麦克风",
+          "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "react-native-video",
+        {
+          "enableNotificationControls": true,
+          "androidExtensions": {
+            "useExoplayerRtsp": false,
+            "useExoplayerSmoothStreaming": false,
+            "useExoplayerHls": false,
+            "useExoplayerDash": false
+          }
         }
       ]
     ],
