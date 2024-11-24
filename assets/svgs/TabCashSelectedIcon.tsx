@@ -1,0 +1,28 @@
+import * as React from 'react'
+import Svg, { Path, Defs, Pattern, Use, Image } from 'react-native-svg'
+export const TabCashSelectedIcon = (props) => {
+ const { width, height } = props
+ return (
+  <Svg
+   xmlns="http://www.w3.org/2000/svg"
+   xmlnsXlink="http://www.w3.org/1999/xlink"
+   width={width || 21}
+   height={height || 21}
+   fill="none"
+   {...props}
+  >
+   <Path fill="url(#a)" d="M0 0h21v21H0z" />
+   <Defs>
+    <Pattern id="a" width={1} height={1} patternContentUnits="objectBoundingBox">
+     <Use xlinkHref="#b" transform="scale(.01)" />
+    </Pattern>
+    <Image
+     xlinkHref="data:image/png;base64,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"
+     id="b"
+     width={100}
+     height={100}
+    />
+   </Defs>
+  </Svg>
+ )
+}

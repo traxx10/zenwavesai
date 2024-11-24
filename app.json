@@ -1,20 +1,33 @@
 {
   "expo": {
-    "name": "zenwavesai",
-    "slug": "zenwavesai",
+    "name": "ZenWaves AI",
+    "slug": "zenwaves",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "newArchEnabled": false,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zenwaves.ai",
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-4165595262807711~6792012396"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.zenwaves.ai",
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-4165595262807711~4716615029"
       }
     },
     "web": {
@@ -25,17 +38,29 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
+        "expo-build-properties",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-4165595262807711~4716615029",
+          "iosAppId": "ca-app-pub-4165595262807711~6792012396",
+          "userTrackingDescription": "此标识符将用于向您投放个性化广告"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bf3144e5-e478-4f04-bd5a-73398e921573"
+      }
     }
   }
 }
