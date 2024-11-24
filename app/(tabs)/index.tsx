@@ -1,5 +1,5 @@
 import RewardedAdScreen from '@/screens/RewardedAdScreen';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
   return <RewardedAdScreen />;

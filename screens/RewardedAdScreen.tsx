@@ -61,7 +61,9 @@ const RewardedAdScreen = () => {
       <Button
         title="Show Rewarded Ad"
         onPress={() => {
-          rewarded.show();
+          rewarded.show().catch((error) => {
+            console.log('Rewarded ad failed to show: ', error);
+          });
         }}
       />
     </SafeAreaView>
