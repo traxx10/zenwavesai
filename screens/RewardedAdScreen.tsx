@@ -1,28 +1,22 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Button } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { Button, View, StyleSheet, Alert, Platform } from 'react-native';
 import {
   RewardedAd,
   RewardedAdEventType,
-  TestIds,
 } from 'react-native-google-mobile-ads';
-import { Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
 
 const adUnitId = Platform.select({
   android: 'ca-app-pub-3940256099942544/5224354917', // Android 测试 ID
   ios: 'ca-app-pub-3940256099942544/1712485313', // iOS 测试 ID
 }) as string;
 
-// const adUnitId = __DEV__
-//   ? TestIds.REWARDED
-//   : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
-
+// const rewarded = RewardedAd.createForAdRequest(adUnitId as string);
 const rewarded = RewardedAd.createForAdRequest(adUnitId, {
   keywords: ['fashion', 'clothing'],
 });
 
-const RewardedAdScreen = () => {
+export default function RewardedAdScreen() {
   const [loaded, setLoaded] = useState(false);
 
   useFocusEffect(
@@ -31,43 +25,72 @@ const RewardedAdScreen = () => {
         RewardedAdEventType.LOADED,
         () => {
           setLoaded(true);
+          console.log('广告加载完成');
         }
       );
+
       const unsubscribeEarned = rewarded.addAdEventListener(
         RewardedAdEventType.EARNED_REWARD,
         (reward) => {
-          console.log('User earned reward of ', reward);
+          console.log('获得奖励:', reward);
+          Alert.alert('恭喜', '你获得了奖励!', [
+            {
+              text: '确定',
+              onPress: () => {
+                router.back();
+              },
+            },
+          ]);
+          // Alert.alert('恭喜', '你获得了奖励!');
         }
       );
 
-      // Start loading the rewarded ad straight away
+      // 直接开始加载广告
       rewarded.load();
 
-      // Unsubscribe from events on unmount
       return () => {
         unsubscribeLoaded();
         unsubscribeEarned();
+        setLoaded(false);
       };
     }, [])
   );
 
-  // No advert ready to show yet
+  // 如果广告未加载完成，不显示按钮
   if (!loaded) {
-    return null;
+    return (
+      <View style={styles.container}>
+        <Button title="广告加载中..." disabled={true} />
+      </View>
+    );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View style={styles.container}>
       <Button
+        title="观看广告"
+        onPress={() => {
+          rewarded.show();
+        }}
+      />
+
+      {/* <Button
         title="Show Rewarded Ad"
         onPress={() => {
           rewarded.show().catch((error) => {
             console.log('Rewarded ad failed to show: ', error);
           });
         }}
-      />
-    </SafeAreaView>
+      /> */}
+    </View>
   );
-};
+}
 
-export default RewardedAdScreen;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+});

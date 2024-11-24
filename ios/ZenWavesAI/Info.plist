@@ -31,6 +31,12 @@
           <string>com.zenwaves.ai</string>
         </array>
       </dict>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.googleusercontent.apps.693233744101-ntrtnqf5fr2vv884ufb0se3lo4l03tb7</string>
+        </array>
+      </dict>
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>

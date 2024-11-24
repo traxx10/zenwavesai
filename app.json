@@ -96,6 +96,12 @@
             "useExoplayerDash": false
           }
         }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.693233744101-ntrtnqf5fr2vv884ufb0se3lo4l03tb7"
+        }
       ]
     ],
     "experiments": {
