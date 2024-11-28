@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,16 +11,19 @@ import {
   ScrollView,
   Animated,
   Easing,
-  SafeAreaView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import HeartIcon from '../assets/icons/Heart.svg';
 import ChatIcon from '../assets/icons/Chat.svg';
 import BookmarkIcon from '../assets/icons/Bookmark.svg';
 import SearchIcon from '../assets/icons/search.svg';
 import EyeIcon from '../assets/icons/Eye.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Purchases from 'react-native-purchases';
+import { BASE_URL } from '@/utils/apis';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface MusicItem {
   id: string;
@@ -51,6 +54,63 @@ const FeedScreen = () => {
   const [userId, setUserId] = useState<string>('');
   const borderAnimation = useRef(new Animated.Value(0)).current;
 
+  useFocusEffect(
+    useCallback(() => {
+      // Purchases.configure({ apiKey: 'appl_PitJggrUesUgIZSqrHJAsbaXNTC' });
+      // Purchases.getOfferings()
+      //   .then((offerings) => {
+      //     console.log(offerings, 'offerings');
+      //   })
+      //   .catch((error) => {
+      //     console.log(error, 'error_fetching_offerings');
+      //   });
+      // Purchases.getProducts(['Basic Plan', 'rc_11999_1y'])
+      // Purchases.getProducts([
+      //   'rc_1199_1m',
+      //   'rc_1999_1m',
+      //   'rc_11999_1y',
+      //   'rc_19999_1y',
+      // ])
+      //   .then((products) => {
+      //     console.log(products, 'products');
+      //   })
+      //   .catch((error) => {
+      //     console.log(error, 'error_fetching_products');
+      //   });
+      // (async () => {
+      //   // const products = await Purchases.getProducts([
+      //   //   'Basic Plan',
+      //   //   'Premium Plan',
+      //   // ]);
+      //   // console.log('products_items', products);
+      //   // // const offerings = await Purchases.getOfferings().catch((error) => {
+      //   // //   console.log(error, 'error');
+      //   // // });
+      //   // // console.log(offerings, 'offerings');
+      //   // try {
+      //   //   const offerings = await Purchases.getOfferings();
+      //   //   if (
+      //   //     offerings.current !== null &&
+      //   //     offerings.current.availablePackages.length !== 0
+      //   //   ) {
+      //   //     // Display packages for sale
+      //   //   }
+      //   // } catch (e) {
+      //   //   console.log(e, 'error_getting_offering');
+      //   // }
+      //   try {
+      //     const customerInfo = await Purchases.getCustomerInfo();
+      //     console.log(customerInfo);
+      //     // if(typeof customerInfo.entitlements.active[<my_entitlement_identifier>] !== "undefined") {
+      //     //   // Grant user "pro" access
+      //     // }
+      //   } catch (e) {
+      //     // Error fetching purchaser info
+      //   }
+      // })();
+    }, [])
+  );
+
   useEffect(() => {
     const getUserId = async () => {
       try {
@@ -72,9 +132,7 @@ const FeedScreen = () => {
     console.log('Fetching music data for userId:', userId);
     const fetchMusicData = async () => {
       try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/all-music/${userId}`
-        );
+        const response = await fetch(`${BASE_URL}/all-music/${userId}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -340,9 +398,9 @@ const FeedScreen = () => {
           borderRadius: 12,
           margin: 12,
         }}
-        onPress={() => router.push('/rewardedad')}
+        onPress={() => router.push('/subscribe')}
       >
-        <Text>Open Rewarded Ads</Text>
+        <Text>Open Subscribe</Text>
       </TouchableOpacity>
 
       <FlatList

@@ -1,4 +1,4 @@
-package com.zenwaves.ai
+package com.zenwaves.app
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

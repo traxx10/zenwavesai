@@ -1,30 +1,51 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, StatusBar, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StatusBar,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router'; // Import useRouter for navigation
 import BackIcon from '../assets/icons/back.svg'; // Import your custom back icon
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 export default function FriendRequestsScreen() {
   const router = useRouter(); // Use router for navigation
   const [currentUserID, setCurrentUserID] = useState<string>('');
-  const [friendRequests, setFriendRequests] = useState<{ id: string; name: string; image: { uri: string } }[]>([]);
+  const [friendRequests, setFriendRequests] = useState<
+    { id: string; name: string; image: { uri: string } }[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Function to fetch followers list
   const fetchFollowers = async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/users/${currentUserID}/followers`);
+      const response = await axios.get(
+        `${BASE_URL}/users/${currentUserID}/followers`
+      );
       if (response.data.followers) {
-        const followersData = response.data.followers.map((follower: { id: string; first_name: string; last_name: string; avatar_url: string }) => ({
-          id: follower.id,
-          name: `${follower.first_name} ${follower.last_name}`,
-          image: { uri: follower.avatar_url },
-        }));
+        const followersData = response.data.followers.map(
+          (follower: {
+            id: string;
+            first_name: string;
+            last_name: string;
+            avatar_url: string;
+          }) => ({
+            id: follower.id,
+            name: `${follower.first_name} ${follower.last_name}`,
+            image: { uri: follower.avatar_url },
+          })
+        );
         setFriendRequests(followersData);
       }
     } catch (error) {
-      console.error("Error fetching followers:", error);
+      console.error('Error fetching followers:', error);
     } finally {
       setIsLoading(false);
     }
@@ -54,35 +75,51 @@ export default function FriendRequestsScreen() {
   // Function to handle following a user
   const handleFollowUser = async (targetId: string) => {
     try {
-      const url = `http://127.0.0.1:8000/users/${currentUserID}/follow/${targetId}`;
+      const url = `${BASE_URL}/users/${currentUserID}/follow/${targetId}`;
       console.log('Follow User URL:', url); // Output URL for debugging
       await axios.post(url);
       // Update state to reflect that the user has been followed
-      setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== targetId));
+      setFriendRequests((prevRequests) =>
+        prevRequests.filter((request) => request.id !== targetId)
+      );
     } catch (error) {
-      console.error("Error following user:", error);
+      console.error('Error following user:', error);
     }
   };
 
   // Function to handle rejecting a follow request
   const handleRejectFollowRequest = async (followerId: string) => {
     try {
-      await axios.post(`http://127.0.0.1:8000/users/${currentUserID}/reject-follow-request/${followerId}`);
+      await axios.post(
+        `${BASE_URL}/users/${currentUserID}/reject-follow-request/${followerId}`
+      );
       // Update state to reflect that the request has been rejected
-      setFriendRequests(prevRequests => prevRequests.filter(request => request.id !== followerId));
+      setFriendRequests((prevRequests) =>
+        prevRequests.filter((request) => request.id !== followerId)
+      );
     } catch (error) {
-      console.error("Error rejecting follow request:", error);
+      console.error('Error rejecting follow request:', error);
     }
   };
 
-  const renderFriendRequest = ({ item }: { item: { id: string; name: string; image: { uri: string } } }) => (
+  const renderFriendRequest = ({
+    item,
+  }: {
+    item: { id: string; name: string; image: { uri: string } };
+  }) => (
     <View style={styles.friendContainer}>
       <Image source={item.image} style={styles.friendImage} />
       <Text style={styles.friendName}>{item.name}</Text>
-      <TouchableOpacity style={styles.followButton} onPress={() => handleFollowUser(item.id)}>
+      <TouchableOpacity
+        style={styles.followButton}
+        onPress={() => handleFollowUser(item.id)}
+      >
         <Text style={styles.followButtonText}>Follow</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.deleteButton} onPress={() => handleRejectFollowRequest(item.id)}>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => handleRejectFollowRequest(item.id)}
+      >
         <Text style={styles.deleteButtonText}>Delete</Text>
       </TouchableOpacity>
     </View>
@@ -91,7 +128,7 @@ export default function FriendRequestsScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>

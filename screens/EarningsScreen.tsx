@@ -27,6 +27,7 @@ import PowerstoneIcon from '../assets/icons/powerstone.svg';
 import BuyStonesIcon from '../assets/icons/buystones.svg';
 import CashOutIcon from '../assets/icons/cashout.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -52,7 +53,9 @@ interface DailyActivity {
 
 const EarningsScreen = () => {
   const [userData, setUserData] = React.useState<UserData | null>(null);
-  const [recentActivities, setRecentActivities] = React.useState<DailyActivity[]>([]);
+  const [recentActivities, setRecentActivities] = React.useState<
+    DailyActivity[]
+  >([]);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -60,41 +63,50 @@ const EarningsScreen = () => {
         const userId = await AsyncStorage.getItem('userId');
         if (userId) {
           // 获取用户数据
-          const profileResponse = await fetch(`http://127.0.0.1:8000/users/${userId}/profile`);
+          const profileResponse = await fetch(
+            `${BASE_URL}/users/${userId}/profile`
+          );
           const profileData = await profileResponse.json();
           setUserData(profileData.data);
 
           // 获取音乐收益数据
-          const earningsResponse = await fetch(`http://127.0.0.1:8000/earnings/music-details/${userId}`);
+          const earningsResponse = await fetch(
+            `${BASE_URL}/earnings/music-details/${userId}`
+          );
           const earningsData = await earningsResponse.json();
-          
+
           // 处理并按日期合并活动数据
           const dailyActivities = new Map<string, DailyActivity>();
-          
+
           earningsData.data.music_list.forEach((music: any) => {
             music.play_history.forEach((history: any) => {
               const dateKey = new Date(history.date).toDateString();
-              const revenue = typeof history.revenue === 'number' ? history.revenue : 0;
-              
+              const revenue =
+                typeof history.revenue === 'number' ? history.revenue : 0;
+
               if (!dailyActivities.has(dateKey)) {
                 dailyActivities.set(dateKey, {
                   date: history.date,
                   total_revenue: revenue,
                   music_info: music.music_info,
-                  is_settled: history.is_settled || false
+                  is_settled: history.is_settled || false,
                 });
               } else {
                 const existing = dailyActivities.get(dateKey)!;
-                existing.total_revenue = (existing.total_revenue || 0) + revenue;
-                existing.is_settled = (existing.is_settled && history.is_settled) || false;
+                existing.total_revenue =
+                  (existing.total_revenue || 0) + revenue;
+                existing.is_settled =
+                  (existing.is_settled && history.is_settled) || false;
               }
             });
           });
-          
+
           // 转换为数组并按日期排序
           const activities = Array.from(dailyActivities.values())
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .slice(0, 5);  // 只取最近5天
+            .sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            )
+            .slice(0, 5); // 只取最近5天
 
           setRecentActivities(activities);
         }
@@ -109,26 +121,49 @@ const EarningsScreen = () => {
 
   const getCurrentMonth = () => {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return months[new Date().getMonth()];
   };
 
   const getChartData = () => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     const currentMonth = new Date().getMonth();
     const labels = [];
-    
+
     // 修改标签顺序：从当前月份的前一个月开始
     for (let i = -1; i <= 4; i++) {
       const monthIndex = (currentMonth + i + 12) % 12;
       labels.push(months[monthIndex]);
     }
-    
+
     // 示例数据 - 你可以根据需要修改或从API获取实际数据
     const data = [40, 80, 60, 100, 75, 95];
-    
+
     return { labels, data };
   };
 
@@ -136,57 +171,66 @@ const EarningsScreen = () => {
 
   const renderDashboardItems = () => (
     <View style={styles.dashboard}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.dashboardItem}
         onPress={() => router.push('/playbackrevenue')}
       >
         <PlaybackIcon width={30} height={30} style={styles.dashboardIcon} />
         <View style={styles.dashboardTextContainer}>
           <Text style={styles.dashboardTitle}>Playback Revenue</Text>
-          <Text style={styles.dashboardSubtitle}>Get paid for every track play</Text>
+          <Text style={styles.dashboardSubtitle}>
+            Get paid for every track play
+          </Text>
         </View>
       </TouchableOpacity>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.dashboardItem}
         onPress={() => router.push('/adrevenue')}
       >
         <AdRevenueIcon width={30} height={30} style={styles.dashboardIcon} />
         <View style={styles.dashboardTextContainer}>
           <Text style={styles.dashboardTitle}>Ad Revenue Share</Text>
-          <Text style={styles.dashboardSubtitle}>Revenue from ads on your music</Text>
+          <Text style={styles.dashboardSubtitle}>
+            Revenue from ads on your music
+          </Text>
         </View>
       </TouchableOpacity>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.dashboardItem}
         onPress={() => router.push('/commissionrecord')}
       >
         <ReferralIcon width={30} height={30} style={styles.dashboardIcon} />
         <View style={styles.dashboardTextContainer}>
           <Text style={styles.dashboardTitle}>Referral Commission</Text>
-          <Text style={styles.dashboardSubtitle}>Invite friends, earn commissions</Text>
+          <Text style={styles.dashboardSubtitle}>
+            Invite friends, earn commissions
+          </Text>
         </View>
       </TouchableOpacity>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.dashboardItem}
         onPress={() => router.push('/promotionrecords')}
       >
         <EngagementIcon width={30} height={30} style={styles.dashboardIcon} />
         <View style={styles.dashboardTextContainer}>
           <Text style={styles.dashboardTitle}>Drive Engagement</Text>
-          <Text style={styles.dashboardSubtitle}>Boost reach with targeted ads</Text>
+          <Text style={styles.dashboardSubtitle}>
+            Boost reach with targeted ads
+          </Text>
         </View>
       </TouchableOpacity>
     </View>
   );
 
   const renderActivityItem = ({ item }: { item: DailyActivity }) => {
-    const amount = typeof item.total_revenue === 'number' 
-      ? item.total_revenue.toFixed(2) 
-      : '0.00';
-    
+    const amount =
+      typeof item.total_revenue === 'number'
+        ? item.total_revenue.toFixed(2)
+        : '0.00';
+
     const formattedDate = new Date(item.date).toLocaleString('en-US', {
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
 
     return (
@@ -198,10 +242,12 @@ const EarningsScreen = () => {
           <Text style={styles.activityName}>{item.music_info.title}</Text>
           <Text style={styles.activityDate}>{formattedDate}</Text>
         </View>
-        <Text style={[
-          styles.activityAmount,
-          { color: item.is_settled ? '#000' : '#666' }
-        ]}>
+        <Text
+          style={[
+            styles.activityAmount,
+            { color: item.is_settled ? '#000' : '#666' },
+          ]}
+        >
           {item.is_settled ? '' : '~'} ${amount}
         </Text>
       </View>
@@ -224,13 +270,19 @@ const EarningsScreen = () => {
               </TouchableOpacity>
               <View style={styles.userInfo}>
                 <Image
-                  source={userData?.avatar_url ? { uri: userData.avatar_url } : require('../assets/images/chat3.png')}
+                  source={
+                    userData?.avatar_url
+                      ? { uri: userData.avatar_url }
+                      : require('../assets/images/chat3.png')
+                  }
                   style={styles.userAvatar}
                 />
                 <View>
                   <Text style={styles.greeting}>Hello!</Text>
                   <Text style={styles.userName}>
-                    {userData ? `${userData.first_name} ${userData.last_name}` : 'User'}
+                    {userData
+                      ? `${userData.first_name} ${userData.last_name}`
+                      : 'User'}
                   </Text>
                 </View>
               </View>
@@ -245,7 +297,11 @@ const EarningsScreen = () => {
                 <View style={styles.balanceInfo}>
                   <Text style={styles.balanceTitle}>Total Balance</Text>
                   <Text style={styles.balanceAmount}>
-                    $ {userData?.balance?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                    ${' '}
+                    {userData?.balance?.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }) || '0.00'}
                   </Text>
                 </View>
                 <View style={styles.powerstoneContainer}>
@@ -253,7 +309,8 @@ const EarningsScreen = () => {
                   <View style={styles.powerstoneAmountContainer}>
                     <PowerstoneIcon width={20} height={20} />
                     <Text style={styles.powerstoneAmount}>
-                      {userData?.powerstone_balance?.toLocaleString('en-US') || 0}
+                      {userData?.powerstone_balance?.toLocaleString('en-US') ||
+                        0}
                     </Text>
                   </View>
                 </View>
@@ -281,7 +338,7 @@ const EarningsScreen = () => {
               </View>
 
               {/* Earnings Overview Chart */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.earningsOverview]}
                 onPress={() => router.push('/earningsoverview')}
               >
@@ -292,11 +349,14 @@ const EarningsScreen = () => {
                 <LineChart
                   data={{
                     labels: chartData.labels,
-                    datasets: [{ 
-                      data: chartData.data,
-                      color: (opacity = 1) => `rgba(118, 118, 118, ${opacity})`,
-                      strokeWidth: 2,
-                    }],
+                    datasets: [
+                      {
+                        data: chartData.data,
+                        color: (opacity = 1) =>
+                          `rgba(118, 118, 118, ${opacity})`,
+                        strokeWidth: 2,
+                      },
+                    ],
                   }}
                   width={screenWidth * 0.5}
                   height={90}
@@ -310,25 +370,20 @@ const EarningsScreen = () => {
                     color: (opacity = 1) => `rgba(118, 118, 118, ${opacity})`,
                     labelColor: () => '#969696',
                     propsForDots: {
-                      r: "0",
+                      r: '0',
                     },
                     propsForLabels: {
                       fontSize: 12,
-                    }
+                    },
                   }}
                   withVerticalLines={false}
                   withHorizontalLines={false}
                   withVerticalLabels={true}
                   withHorizontalLabels={false}
-                  renderDotContent={({x, y, index}) => 
+                  renderDotContent={({ x, y, index }) =>
                     index === 1 ? (
                       <Svg>
-                        <Circle
-                          cx={x}
-                          cy={y}
-                          r={4}
-                          fill="black"
-                        />
+                        <Circle cx={x} cy={y} r={4} fill="black" />
                         <Line
                           x1={x}
                           y1={y}
@@ -404,12 +459,12 @@ const styles = StyleSheet.create({
   balanceInfo: { flex: 1, marginTop: 20 },
   balanceTitle: { color: '#FFF', fontSize: 14 },
   balanceAmount: { color: '#FFF', fontSize: 32, fontWeight: 'bold' },
-  powerstoneContainer: { 
+  powerstoneContainer: {
     alignItems: 'flex-end',
     marginTop: 20,
   },
-  powerstoneText: { 
-    color: '#FFF', 
+  powerstoneText: {
+    color: '#FFF',
     fontSize: 14,
   },
   powerstoneAmountContainer: {
@@ -417,8 +472,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 5,
   },
-  powerstoneAmount: { 
-    color: '#FFF', 
+  powerstoneAmount: {
+    color: '#FFF',
     fontSize: 20,
     marginLeft: 5,
   },
@@ -457,7 +512,7 @@ const styles = StyleSheet.create({
   earningsOverview: {
     flex: 1,
     alignItems: 'center',
-    
+
     borderRadius: 30,
     padding: 15,
     paddingHorizontal: -20,

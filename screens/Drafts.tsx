@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  Alert,
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import BackIcon from '../assets/icons/back.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 interface DraftItem {
   id: string;
@@ -16,7 +25,7 @@ interface DraftItem {
 
 export default function DraftsScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ 
+  const params = useLocalSearchParams<{
     returnScreen?: string;
     draft_list_id?: string;
   }>();
@@ -31,16 +40,18 @@ export default function DraftsScreen() {
         const userId = await AsyncStorage.getItem('userId');
         if (!userId) return;
 
-        const response = await fetch(`http://127.0.0.1:8000/users/${userId}/active-drafts/count`);
+        const response = await fetch(
+          `${BASE_URL}/users/${userId}/active-drafts/count`
+        );
         const data = await response.json();
-        
+
         if (data.status === 'success') {
           const formattedDrafts = data.data.active_drafts.map((draft: any) => ({
             id: draft.draft_info.id,
             draft_list_id: draft.draft_info.draft_list_id,
             title: draft.music_library_info.title,
             cover_url: draft.music_library_info.cover_url,
-            created_at: draft.draft_info.created_at
+            created_at: draft.draft_info.created_at,
           }));
           setDrafts(formattedDrafts);
         }
@@ -57,31 +68,31 @@ export default function DraftsScreen() {
     const now = new Date();
     const past = new Date(dateString);
     const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
-    
+
     // 确保时间差不为负数
     if (diffInSeconds <= 0) return '1min';
-    
+
     // 小于1分钟的显示为1分钟
     if (diffInSeconds < 60) return '1min';
-    
+
     // 小于1小时显示分钟
     if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60);
       return `${minutes}min`;
     }
-    
+
     // 小于1天显示小时
     if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
       return `${hours}h`;
     }
-    
+
     // 小于30天显示天数
     if (diffInSeconds < 2592000) {
       const days = Math.floor(diffInSeconds / 86400);
       return `${days}d`;
     }
-    
+
     // 超过30天显示月份
     const months = Math.floor(diffInSeconds / 2592000);
     return `${months}mo`;
@@ -109,21 +120,23 @@ export default function DraftsScreen() {
         } else {
           router.push({
             pathname: '/musicedit',
-            params: { draft_list_id: item.draft_list_id }
+            params: { draft_list_id: item.draft_list_id },
           });
         }
       }}
       activeOpacity={isSelecting ? 0.7 : 1}
     >
-      <Image 
-        source={{ uri: item.cover_url }} 
+      <Image
+        source={{ uri: item.cover_url }}
         style={styles.draftImage}
         defaultSource={require('../assets/images/Drafts1.png')} // 默认图片
       />
       <Text style={styles.draftTitle}>{getTimeAgo(item.created_at)}</Text>
       {isSelecting && (
         <View style={styles.selectCircle}>
-          {selectedItems.includes(item.id) && <View style={styles.selectedIndicator} />}
+          {selectedItems.includes(item.id) && (
+            <View style={styles.selectedIndicator} />
+          )}
         </View>
       )}
     </TouchableOpacity>
@@ -136,22 +149,26 @@ export default function DraftsScreen() {
       if (!userId || selectedItems.length === 0) return;
 
       // 获取选中项目的 draft_list_id
-      const selectedDrafts = drafts.filter(draft => selectedItems.includes(draft.id));
-      const draftListIds = selectedDrafts.map(draft => draft.draft_list_id).join(',');
+      const selectedDrafts = drafts.filter((draft) =>
+        selectedItems.includes(draft.id)
+      );
+      const draftListIds = selectedDrafts
+        .map((draft) => draft.draft_list_id)
+        .join(',');
 
       const response = await fetch(
-        `http://127.0.0.1:8000/users/${userId}/drafts?draft_list_ids=${draftListIds}`,
+        `${BASE_URL}/users/${userId}/drafts?draft_list_ids=${draftListIds}`,
         {
           method: 'DELETE',
         }
       );
 
       const result = await response.json();
-      
+
       if (result.status === 'success') {
         // 从本地状态中移除已删���的草稿
-        setDrafts(prevDrafts => 
-          prevDrafts.filter(draft => !selectedItems.includes(draft.id))
+        setDrafts((prevDrafts) =>
+          prevDrafts.filter((draft) => !selectedItems.includes(draft.id))
         );
         setSelectedItems([]); // 清空选择
         setIsSelecting(false); // 退出选择模式
@@ -169,9 +186,9 @@ export default function DraftsScreen() {
     if (params.returnScreen === 'musicedit' && params.draft_list_id) {
       router.push({
         pathname: '/musicedit',
-        params: { 
-          draft_list_id: params.draft_list_id 
-        }
+        params: {
+          draft_list_id: params.draft_list_id,
+        },
       });
     } else {
       router.back();
@@ -188,8 +205,13 @@ export default function DraftsScreen() {
           <BackIcon width={24} height={24} style={styles.backIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Drafts</Text>
-        <TouchableOpacity onPress={toggleSelectMode} style={styles.selectButton}>
-          <Text style={styles.selectButtonText}>{isSelecting ? "Cancel" : "Select"}</Text>
+        <TouchableOpacity
+          onPress={toggleSelectMode}
+          style={styles.selectButton}
+        >
+          <Text style={styles.selectButtonText}>
+            {isSelecting ? 'Cancel' : 'Select'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -212,23 +234,47 @@ export default function DraftsScreen() {
       {isSelecting && (
         <View style={styles.actionBar}>
           <TouchableOpacity
-            style={[styles.actionButton, selectedItems.length !== 1 && styles.disabledButton]}
+            style={[
+              styles.actionButton,
+              selectedItems.length !== 1 && styles.disabledButton,
+            ]}
             disabled={selectedItems.length !== 1}
             onPress={() => alert('Invite Friend to Edit Music')}
           >
-            <Ionicons name="share-outline" size={18} color={selectedItems.length === 1 ? "#000" : "#ccc"} />
-            <Text style={[styles.actionText, { color: selectedItems.length === 1 ? "#000" : "#ccc" }]}>
+            <Ionicons
+              name="share-outline"
+              size={18}
+              color={selectedItems.length === 1 ? '#000' : '#ccc'}
+            />
+            <Text
+              style={[
+                styles.actionText,
+                { color: selectedItems.length === 1 ? '#000' : '#ccc' },
+              ]}
+            >
               Invite Friends to Edit Music
             </Text>
           </TouchableOpacity>
           <View style={styles.separator} />
           <TouchableOpacity
-            style={[styles.actionButton, selectedItems.length === 0 && styles.disabledButton]}
+            style={[
+              styles.actionButton,
+              selectedItems.length === 0 && styles.disabledButton,
+            ]}
             disabled={selectedItems.length === 0}
             onPress={handleDeleteDrafts}
           >
-            <Ionicons name="trash-outline" size={18} color={selectedItems.length > 0 ? "#ff3b30" : "#ccc"} />
-            <Text style={[styles.actionText, { color: selectedItems.length > 0 ? "#ff3b30" : "#ccc" }]}>
+            <Ionicons
+              name="trash-outline"
+              size={18}
+              color={selectedItems.length > 0 ? '#ff3b30' : '#ccc'}
+            />
+            <Text
+              style={[
+                styles.actionText,
+                { color: selectedItems.length > 0 ? '#ff3b30' : '#ccc' },
+              ]}
+            >
               Delete ({selectedItems.length})
             </Text>
           </TouchableOpacity>

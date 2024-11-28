@@ -98,6 +98,8 @@ PODS:
   - hermes-engine (0.76.3):
     - hermes-engine/Pre-built (= 0.76.3)
   - hermes-engine/Pre-built (0.76.3)
+  - PurchasesHybridCommon (13.9.0):
+    - RevenueCat (= 5.8.0)
   - RCT-Folly (2024.01.01.00):
     - boost
     - DoubleConversion
@@ -1689,6 +1691,7 @@ PODS:
     - React-utils (= 0.76.3)
   - ReactNativeAudioToolkit (2.0.3):
     - React
+  - RevenueCat (5.8.0)
   - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNGestureHandler (2.20.2):
@@ -1737,6 +1740,9 @@ PODS:
     - Yoga
   - RNGoogleSignin (13.1.0):
     - GoogleSignIn (~> 7.1)
+    - React-Core
+  - RNPurchases (8.2.7):
+    - PurchasesHybridCommon (= 13.9.0)
     - React-Core
   - RNReanimated (3.16.2):
     - DoubleConversion
@@ -1954,6 +1960,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
+  - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -1967,6 +1974,8 @@ SPEC REPOS:
     - GoogleUserMessagingPlatform
     - GTMAppAuth
     - GTMSessionFetcher
+    - PurchasesHybridCommon
+    - RevenueCat
     - SocketRocket
     - ZXingObjC
 
@@ -2160,6 +2169,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-google-mobile-ads"
   RNGoogleSignin:
     :path: "../node_modules/@react-native-google-signin/google-signin"
+  RNPurchases:
+    :path: "../node_modules/react-native-purchases"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -2205,6 +2216,7 @@ SPEC CHECKSUMS:
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   hermes-engine: 0555a84ea495e8e3b4bde71b597cd87fbb382888
+  PurchasesHybridCommon: 2e684a22e4aaf33c5fc10fd9e2ca2e27e6b7abff
   RCT-Folly: bf5c0376ffe4dd2cf438dcf86db385df9fdce648
   RCTDeprecation: 2c5e1000b04ab70b53956aa498bf7442c3c6e497
   RCTRequired: 5f785a001cf68a551c5f5040fb4c415672dbb481
@@ -2266,10 +2278,12 @@ SPEC CHECKSUMS:
   ReactCodegen: 11ba5753ff8fd0eade9f701a238b6bfbcfcc241d
   ReactCommon: cef332bed205215d2a0270e12e1feb337974ccfe
   ReactNativeAudioToolkit: de9610f323e855ac6574be8c99621f3d57c5df06
+  RevenueCat: 4cd1daad3a57d2b4015ed2b4aef0a0f24ffce0a1
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNGestureHandler: 4b397b156d173028ff97960b5ebacfbb21232081
   RNGoogleMobileAds: ac1f2f667cce4c7bb9062fd66906c99bb4352bb4
   RNGoogleSignin: 9e68b9bcc3888219357924e32ee563624745647d
+  RNPurchases: 314406aa3e431d19570360da91f58fd5d0ab68ac
   RNReanimated: ffb27866681d7122c2bb2677590cb2a6da237948
   RNScreens: 906192367b418a8d644090d7375d4657d5a5aab0
   RNSVG: 8b1a777d54096b8c2a0fd38fc9d5a454332bbb4d

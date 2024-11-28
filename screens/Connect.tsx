@@ -1,13 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, FlatList, TouchableOpacity, StatusBar, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  StatusBar,
+  Alert,
+  ScrollView,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import SearchIcon from '../assets/icons/search.svg';
 import AddIcon from '../assets/icons/add.svg';
 import { formatDistanceToNow } from 'date-fns';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 const categories = [
-  { id: '1', name: 'Meditation', image: require('../assets/images/group1.png') },
+  {
+    id: '1',
+    name: 'Meditation',
+    image: require('../assets/images/group1.png'),
+  },
   { id: '2', name: 'Pet', image: require('../assets/images/goup2.png') },
   { id: '3', name: 'Brainwave', image: require('../assets/images/goup3.png') },
   { id: '4', name: 'Relaxation', image: require('../assets/images/goup4.png') },
@@ -56,9 +72,11 @@ export default function ConnectScreen() {
 
   const fetchMutualFollowers = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/users/${currentUserID}/mutual-followers`);
+      const response = await fetch(
+        `${BASE_URL}/users/${currentUserID}/mutual-followers`
+      );
       const data = await response.json();
-      if (data.status === "success") {
+      if (data.status === 'success') {
         const followers = await Promise.all(
           data.mutual_followers.map(async (follower: any) => {
             const userInfo = await fetchUserInfo(follower.id);
@@ -66,7 +84,7 @@ export default function ConnectScreen() {
             return {
               ...userInfo,
               lastMessage: lastMessage.content,
-              lastMessageTime: formatTimeAgo(lastMessage.time)
+              lastMessageTime: formatTimeAgo(lastMessage.time),
             };
           })
         );
@@ -75,14 +93,14 @@ export default function ConnectScreen() {
         setMutualFollowers([]);
       }
     } catch (error) {
-      console.error("Error fetching mutual followers:", error);
+      console.error('Error fetching mutual followers:', error);
       setMutualFollowers([]);
     }
   };
 
   const fetchUserInfo = async (userId: string) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/user/${userId}`);
+      const response = await fetch(`${BASE_URL}/user/${userId}`);
       const data = await response.json();
       return {
         id: data.user_info.id,
@@ -90,39 +108,41 @@ export default function ConnectScreen() {
         avatar: data.user_info.avatar_url,
       };
     } catch (error) {
-      console.error("Error fetching user info:", error);
+      console.error('Error fetching user info:', error);
       return {};
     }
   };
 
   const fetchLastMessage = async (targetUserId: string) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/chat/${currentUserID}/history/${targetUserId}`);
+      const response = await fetch(
+        `${BASE_URL}/chat/${currentUserID}/history/${targetUserId}`
+      );
       const data = await response.json();
-      
-      if (data.status === "success" && data.data?.messages?.length > 0) {
+
+      if (data.status === 'success' && data.data?.messages?.length > 0) {
         const lastMessage = data.data.messages[0];
         const isCurrentUserMessage = lastMessage.sender_id === currentUserID;
-        
+
         return {
-          content: lastMessage.content ? 
-            (isCurrentUserMessage ? "You: " : "") + 
-            (lastMessage.content.length > 30 ? 
-              `${lastMessage.content.slice(0, 30)}...` : 
-              lastMessage.content)
-            : "No message content",
+          content: lastMessage.content
+            ? (isCurrentUserMessage ? 'You: ' : '') +
+              (lastMessage.content.length > 30
+                ? `${lastMessage.content.slice(0, 30)}...`
+                : lastMessage.content)
+            : 'No message content',
           time: lastMessage.timestamp || new Date().toISOString(),
         };
       }
-      return { 
-        content: "No messages yet", 
-        time: new Date().toISOString() 
+      return {
+        content: 'No messages yet',
+        time: new Date().toISOString(),
       };
     } catch (error) {
-      console.error("Error fetching last message:", error);
-      return { 
-        content: "No messages yet", 
-        time: new Date().toISOString() 
+      console.error('Error fetching last message:', error);
+      return {
+        content: 'No messages yet',
+        time: new Date().toISOString(),
       };
     }
   };
@@ -130,8 +150,10 @@ export default function ConnectScreen() {
   const formatTimeAgo = (time: string) => {
     try {
       if (!time) return '';
-      
-      let formattedTime = formatDistanceToNow(new Date(time), { addSuffix: true });
+
+      let formattedTime = formatDistanceToNow(new Date(time), {
+        addSuffix: true,
+      });
       formattedTime = formattedTime
         .replace('minutes', 'min')
         .replace('minute', 'min')
@@ -147,7 +169,7 @@ export default function ConnectScreen() {
         .replace('year', 'y');
       return formattedTime;
     } catch (error) {
-      console.error("Error formatting time:", error);
+      console.error('Error formatting time:', error);
       return '';
     }
   };
@@ -169,7 +191,9 @@ export default function ConnectScreen() {
       <Image source={{ uri: item.avatar }} style={styles.messageImage} />
       <View style={styles.messageContent}>
         <Text style={styles.messageName}>{item.name}</Text>
-        <Text style={styles.messageText} numberOfLines={1}>{item.lastMessage}</Text>
+        <Text style={styles.messageText} numberOfLines={1}>
+          {item.lastMessage}
+        </Text>
       </View>
       <View style={styles.messageMeta}>
         <Text style={styles.messageTime}>{item.lastMessageTime}</Text>
@@ -179,12 +203,16 @@ export default function ConnectScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-      
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
       {/* Header */}
       <View style={styles.headerContainer}>
         <Text style={styles.header}>Community</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addButton}
           onPress={() => router.push('/contacts')}
         >
@@ -201,17 +229,19 @@ export default function ConnectScreen() {
         style={styles.categoriesList}
         showsHorizontalScrollIndicator={false}
       />
-      
 
-      
       {/* Messages Header */}
       <View style={styles.messageHeader}>
         <Text style={styles.messageTitle}>Messages</Text>
       </View>
-            {/* Search Bar */}
-            <View style={styles.searchContainer}>
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
         <SearchIcon width={20} height={20} style={styles.searchIcon} />
-        <TextInput style={styles.searchInput} placeholder="Search" placeholderTextColor="#999" />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#999"
+        />
       </View>
       {/* Messages List */}
       <FlatList
@@ -234,7 +264,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-
   },
   headerContainer: {
     flexDirection: 'row',

@@ -22,6 +22,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { formatDistanceToNow } from 'date-fns';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ShareMusicIcon from '../assets/icons/sharemusic.svg'; // Replace with the correct path to sharemusic.svg
+import { BASE_URL } from '@/utils/apis';
 
 type Sender = {
   id: string;
@@ -91,9 +92,7 @@ export default function ChatScreen() {
 
     fetchChatHistory();
 
-    ws.current = new WebSocket(
-      `ws://127.0.0.1:8000/ws/chat/${currentUserID}`
-    );
+    ws.current = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${currentUserID}`);
 
     ws.current.onopen = () => {
       console.log('Connected to WebSocket');
@@ -105,10 +104,10 @@ export default function ChatScreen() {
         const newMessage = JSON.parse(e.data);
         setMessages((prevMessages) => {
           if (
-            (newMessage.sender_id === currentUserID && 
-             newMessage.receiver_id === targetUserId) ||
-            (newMessage.sender_id === targetUserId && 
-             newMessage.receiver_id === currentUserID)
+            (newMessage.sender_id === currentUserID &&
+              newMessage.receiver_id === targetUserId) ||
+            (newMessage.sender_id === targetUserId &&
+              newMessage.receiver_id === currentUserID)
           ) {
             if (
               !prevMessages.some(
@@ -119,8 +118,10 @@ export default function ChatScreen() {
               )
             ) {
               const updatedMessages = [...prevMessages, newMessage];
-              return updatedMessages.sort((a, b) => 
-                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+              return updatedMessages.sort(
+                (a, b) =>
+                  new Date(a.timestamp).getTime() -
+                  new Date(b.timestamp).getTime()
               );
             }
           }
@@ -166,7 +167,7 @@ export default function ChatScreen() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/user/${targetUserId}`);
+        const response = await fetch(`${BASE_URL}/user/${targetUserId}`);
         const data = await response.json();
         console.log('User info response:', data);
 
@@ -192,7 +193,7 @@ export default function ChatScreen() {
   const fetchChatHistory = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/chat/${currentUserID}/history/${targetUserId}`
+        `${BASE_URL}/chat/${currentUserID}/history/${targetUserId}`
       );
       const data = await response.json();
 
@@ -201,19 +202,20 @@ export default function ChatScreen() {
           .map((msg: any) => ({
             ...msg,
             isSent: msg.sender_id === currentUserID,
-            timestamp: msg.timestamp || new Date().toISOString()
+            timestamp: msg.timestamp || new Date().toISOString(),
           }))
-          .sort((a: Message, b: Message) => 
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          .sort(
+            (a: Message, b: Message) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
           );
-        
+
         setMessages(formattedMessages);
-        
+
         if (data.data.user_info) {
           setUserInfo({
             firstName: data.data.user_info.first_name,
             lastName: data.data.user_info.last_name,
-            avatarUrl: data.data.user_info.avatar_url
+            avatarUrl: data.data.user_info.avatar_url,
           });
         }
       }
@@ -253,14 +255,14 @@ export default function ChatScreen() {
           id: currentUserID,
           first_name: userInfo?.firstName || '',
           last_name: userInfo?.lastName || '',
-          avatar_url: userInfo?.avatarUrl || ''
-        }
+          avatar_url: userInfo?.avatarUrl || '',
+        },
       };
-      
+
       try {
         ws.current?.send(JSON.stringify(messageData));
         console.log('Message sent successfully');
-        
+
         setMessages((prevMessages) => [...prevMessages, messageData]);
         setMessageText('');
       } catch (error) {
@@ -279,7 +281,11 @@ export default function ChatScreen() {
     }
   }, [messages]);
 
-  const handleAcceptInvitation = async (messageId: string, draftListId: string | undefined, senderId: string) => {
+  const handleAcceptInvitation = async (
+    messageId: string,
+    draftListId: string | undefined,
+    senderId: string
+  ) => {
     if (!draftListId) {
       console.error('缺少 draft_list_id');
       return;
@@ -288,7 +294,7 @@ export default function ChatScreen() {
     try {
       // 先检查是否已经添加过这个草稿
       const checkResponse = await fetch(
-        `http://127.0.0.1:8000/check-draft-invitation/${draftListId}/${currentUserID}`,
+        `${BASE_URL}/check-draft-invitation/${draftListId}/${currentUserID}`,
         {
           method: 'GET',
           headers: {
@@ -296,7 +302,7 @@ export default function ChatScreen() {
           },
         }
       );
-      
+
       const checkData = await checkResponse.json();
       console.log('检查草稿状态:', checkData);
 
@@ -306,15 +312,15 @@ export default function ChatScreen() {
           pathname: '/friendsmusicedit',
           params: {
             draft_list_id: draftListId,
-            friend_id: targetUserId
-          }
+            friend_id: targetUserId,
+          },
         });
         return;
       }
 
       // 只有在草稿不存在时，才执行接受邀请的操作
       const response = await fetch(
-        `http://127.0.0.1:8000/accept-draft-invitation/${messageId}`,
+        `${BASE_URL}/accept-draft-invitation/${messageId}`,
         {
           method: 'POST',
           headers: {
@@ -325,14 +331,14 @@ export default function ChatScreen() {
 
       const data = await response.json();
       console.log('接受邀请响应:', data);
-      
+
       if (data.status === 'success') {
         router.push({
           pathname: '/friendsmusicedit',
           params: {
             draft_list_id: data.data.draft_list_id,
-            friend_id: targetUserId
-          }
+            friend_id: targetUserId,
+          },
         });
       } else {
         Alert.alert('错误', '接受邀请失败');
@@ -369,28 +375,44 @@ export default function ChatScreen() {
       .replace('year', 'y');
 
     if (item.message_type === 'draft') {
-      const inviteText = item.sender_id === currentUserID 
-        ? "You invited to edit this track"
-        : "Invite you to edit this track";
+      const inviteText =
+        item.sender_id === currentUserID
+          ? 'You invited to edit this track'
+          : 'Invite you to edit this track';
 
       return (
-        <TouchableOpacity 
-          onPress={() => handleAcceptInvitation(item.id, item.draft_list_id || '', item.sender_id)}
+        <TouchableOpacity
+          onPress={() =>
+            handleAcceptInvitation(
+              item.id,
+              item.draft_list_id || '',
+              item.sender_id
+            )
+          }
           style={styles.messageWrapper}
         >
-          <View style={[
-            styles.messageContainer,
-            item.sender_id === currentUserID
-              ? styles.sentContainer
-              : styles.receivedContainer,
-          ]}>
+          <View
+            style={[
+              styles.messageContainer,
+              item.sender_id === currentUserID
+                ? styles.sentContainer
+                : styles.receivedContainer,
+            ]}
+          >
             {item.sender_id !== currentUserID && (
-              <Image source={{ uri: item.sender.avatar_url }} style={styles.messageAvatar} />
+              <Image
+                source={{ uri: item.sender.avatar_url }}
+                style={styles.messageAvatar}
+              />
             )}
-            <View style={[
-              styles.inviteCard,
-              item.sender_id === currentUserID ? styles.sentInviteCard : styles.receivedInviteCard,
-            ]}>
+            <View
+              style={[
+                styles.inviteCard,
+                item.sender_id === currentUserID
+                  ? styles.sentInviteCard
+                  : styles.receivedInviteCard,
+              ]}
+            >
               <Text style={styles.inviteText}>{inviteText}</Text>
               <View style={styles.inviteImageContainer}>
                 {item.draft_info && (
@@ -400,17 +422,23 @@ export default function ChatScreen() {
                       style={styles.inviteImage}
                     />
                     <View style={styles.overlay}>
-                      <Text style={styles.trackTitle}>{item.draft_info.title}</Text>
+                      <Text style={styles.trackTitle}>
+                        {item.draft_info.title}
+                      </Text>
                     </View>
                   </>
                 )}
               </View>
             </View>
           </View>
-          <Text style={[
-            styles.messageTime,
-            item.sender_id === currentUserID ? styles.sentTime : styles.receivedTime,
-          ]}>
+          <Text
+            style={[
+              styles.messageTime,
+              item.sender_id === currentUserID
+                ? styles.sentTime
+                : styles.receivedTime,
+            ]}
+          >
             {formattedTime}
           </Text>
         </TouchableOpacity>
@@ -428,18 +456,25 @@ export default function ChatScreen() {
           ]}
         >
           {item.sender_id !== currentUserID && userInfo && (
-            <Image source={{ uri: userInfo.avatarUrl }} style={styles.messageAvatar} />
+            <Image
+              source={{ uri: userInfo.avatarUrl }}
+              style={styles.messageAvatar}
+            />
           )}
           <View
             style={[
               styles.messageBubble,
-              item.sender_id === currentUserID ? styles.sentBubble : styles.receivedBubble,
+              item.sender_id === currentUserID
+                ? styles.sentBubble
+                : styles.receivedBubble,
             ]}
           >
             <Text
               style={[
                 styles.messageText,
-                item.sender_id === currentUserID ? styles.sentText : styles.receivedText,
+                item.sender_id === currentUserID
+                  ? styles.sentText
+                  : styles.receivedText,
               ]}
             >
               {item.content}
@@ -449,7 +484,9 @@ export default function ChatScreen() {
         <Text
           style={[
             styles.messageTime,
-            item.sender_id === currentUserID ? styles.sentTime : styles.receivedTime,
+            item.sender_id === currentUserID
+              ? styles.sentTime
+              : styles.receivedTime,
           ]}
         >
           {formattedTime}
@@ -466,29 +503,39 @@ export default function ChatScreen() {
     >
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <FontAwesomeIcon icon={faArrowLeft} size={24} color="#000" />
         </TouchableOpacity>
         <View style={styles.profileOuterCircle}>
           {userInfo && (
-            <Image source={{ uri: userInfo.avatarUrl }} style={styles.profileImage} />
+            <Image
+              source={{ uri: userInfo.avatarUrl }}
+              style={styles.profileImage}
+            />
           )}
         </View>
         <View style={styles.headerTextContainer}>
           {userInfo && (
-            <Text style={styles.profileName}>{`${userInfo.firstName} ${userInfo.lastName}`}</Text>
+            <Text
+              style={styles.profileName}
+            >{`${userInfo.firstName} ${userInfo.lastName}`}</Text>
           )}
           <Text style={styles.statusText}>Online</Text>
         </View>
         <View style={styles.headerIcons}>
-          <TouchableOpacity 
-            style={styles.iconButton} 
-            onPress={() => router.push({
-              pathname: '/coedited',
-              params: {
-                friendId: targetUserId
-              }
-            })}
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() =>
+              router.push({
+                pathname: '/coedited',
+                params: {
+                  friendId: targetUserId,
+                },
+              })
+            }
           >
             <ShareMusicIcon width={20} height={20} fill="#8E9BB7" />
           </TouchableOpacity>
@@ -505,7 +552,9 @@ export default function ChatScreen() {
           keyExtractor={(item, index) => index.toString()}
           contentContainerStyle={styles.messagesContainer}
           inverted={false}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: true })
+          }
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         />
 
@@ -515,7 +564,12 @@ export default function ChatScreen() {
             <FontAwesomeIcon icon={faCamera} size={22} color="#8E9BB7" />
           </TouchableOpacity>
           <TouchableOpacity>
-            <FontAwesomeIcon icon={faSmile} size={22} color="#8E9BB7" style={styles.iconSpacing} />
+            <FontAwesomeIcon
+              icon={faSmile}
+              size={22}
+              color="#8E9BB7"
+              style={styles.iconSpacing}
+            />
           </TouchableOpacity>
           <TextInput
             style={styles.input}

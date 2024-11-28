@@ -1,21 +1,32 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Animated, PanResponder, Easing } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Animated,
+  PanResponder,
+  Easing,
+} from 'react-native';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { StatusBar } from 'expo-status-bar';
-import BackIcon from '../assets/icons/backwhite.svg'; 
-import MoreIcon from '../assets/icons/mores.svg'; 
-import PlayIcon from '../assets/icons/play.svg'; 
-import RepeatIcon from '../assets/icons/repeat.svg'; 
-import PlayBackIcon from '../assets/icons/play-back.svg'; 
-import PlayForwardIcon from '../assets/icons/next.svg'; 
-import HeartOutlineIcon from '../assets/icons/heart-outline.svg'; 
-import HeartFilledIcon from '../assets/icons/heart-filled.svg'; 
+import BackIcon from '../assets/icons/backwhite.svg';
+import MoreIcon from '../assets/icons/mores.svg';
+import PlayIcon from '../assets/icons/play.svg';
+import RepeatIcon from '../assets/icons/repeat.svg';
+import PlayBackIcon from '../assets/icons/play-back.svg';
+import PlayForwardIcon from '../assets/icons/next.svg';
+import HeartOutlineIcon from '../assets/icons/heart-outline.svg';
+import HeartFilledIcon from '../assets/icons/heart-filled.svg';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Audio } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RocketIcon from '../assets/icons/Rocket.svg';
+import { BASE_URL } from '@/utils/apis';
 
 interface MusicDetails {
   output_url: string;
@@ -61,10 +72,10 @@ export default function ProfileMusicPlayerScreen() {
   useEffect(() => {
     const fetchMusicDetails = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/music-details/${id}`);
+        const response = await fetch(`${BASE_URL}/music-details/${id}`);
         const data = await response.json();
         setMusicDetails(data);
-        
+
         const userId = await AsyncStorage.getItem('userId');
         setIsOwner(userId === data.user_id);
       } catch (error) {
@@ -84,7 +95,7 @@ export default function ProfileMusicPlayerScreen() {
     const checkFavoriteStatus = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/check-favorite/${id}?user_id=${currentUserId}`
+          `${BASE_URL}/check-favorite/${id}?user_id=${currentUserId}`
         );
         const data = await response.json();
         if (data.status === 'success') {
@@ -123,7 +134,7 @@ export default function ProfileMusicPlayerScreen() {
   // Increment play count API call
   const incrementPlayCount = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/increment-play-count/${id}`, {
+      const response = await fetch(`${BASE_URL}/increment-play-count/${id}`, {
         method: 'POST',
       });
       const data = await response.json();
@@ -137,9 +148,9 @@ export default function ProfileMusicPlayerScreen() {
   const recordPlayHistory = async () => {
     try {
       if (!currentUserId) return;
-      
+
       console.log('Attempting to record play history...');
-      const url = `http://127.0.0.1:8000/record-play-history/${currentUserId}/${id}`;
+      const url = `${BASE_URL}/record-play-history/${currentUserId}/${id}`;
       const response = await fetch(url, {
         method: 'POST',
       });
@@ -201,7 +212,8 @@ export default function ProfileMusicPlayerScreen() {
 
   // PanResponder for swipe gestures with smooth easing for the GIF
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 10,
+    onMoveShouldSetPanResponder: (_, gestureState) =>
+      Math.abs(gestureState.dx) > 10,
     onPanResponderRelease: (_, gestureState) => {
       if (gestureState.dx < 0) {
         // Swipe left to hide GIF
@@ -249,7 +261,7 @@ export default function ProfileMusicPlayerScreen() {
   const toggleFavorite = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/toggle-favorite/${id}?user_id=${currentUserId}`,
+        `${BASE_URL}/toggle-favorite/${id}?user_id=${currentUserId}`,
         {
           method: 'POST',
         }
@@ -265,24 +277,37 @@ export default function ProfileMusicPlayerScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" style="light" /> 
+      <StatusBar translucent backgroundColor="transparent" style="light" />
       <Animated.View {...coverResponder.panHandlers}>
-        <Image source={{ uri: musicDetails?.cover_url }} style={styles.topImage} />
+        <Image
+          source={{ uri: musicDetails?.cover_url }}
+          style={styles.topImage}
+        />
       </Animated.View>
 
       {showGif && (
         <Animated.View
           {...panResponder.panHandlers}
           style={[
-            isPlaying ? styles.gifContainer : styles.staticImageContainer, 
-            { transform: [{ translateX: gifTranslateX }], opacity: gifOpacity }
+            isPlaying ? styles.gifContainer : styles.staticImageContainer,
+            { transform: [{ translateX: gifTranslateX }], opacity: gifOpacity },
           ]}
         >
-          <Image source={isPlaying ? require('../assets/images/music.gif') : require('../assets/images/music.png')} style={styles.gifOverlay} />
+          <Image
+            source={
+              isPlaying
+                ? require('../assets/images/music.gif')
+                : require('../assets/images/music.png')
+            }
+            style={styles.gifOverlay}
+          />
         </Animated.View>
       )}
 
-      <TouchableOpacity onPress={() => router.push('/profile')} style={styles.backButton}>
+      <TouchableOpacity
+        onPress={() => router.push('/profile')}
+        style={styles.backButton}
+      >
         <View style={styles.backButtonCircle}>
           <View style={styles.iconWrapper}>
             <BackIcon width={50} height={50} fill="#FFF" />
@@ -309,7 +334,9 @@ export default function ProfileMusicPlayerScreen() {
               <Text style={styles.songTitle}>{musicDetails?.title}</Text>
 
               <ScrollView ref={scrollRef} style={styles.descriptionContainer}>
-                <Text style={styles.description}>{musicDetails?.description}</Text>
+                <Text style={styles.description}>
+                  {musicDetails?.description}
+                </Text>
               </ScrollView>
 
               <Slider
@@ -325,19 +352,24 @@ export default function ProfileMusicPlayerScreen() {
 
               <View style={styles.timeContainer}>
                 <Text style={styles.time}>{formatTime(position)}</Text>
-                <Text style={styles.time}>- {formatTime(duration - position)}</Text>
+                <Text style={styles.time}>
+                  - {formatTime(duration - position)}
+                </Text>
               </View>
 
               <View style={styles.controls}>
                 <TouchableOpacity>
-                  <RepeatIcon width={24} height={24} fill="#8A2BE2" /> 
+                  <RepeatIcon width={24} height={24} fill="#8A2BE2" />
                 </TouchableOpacity>
                 <TouchableOpacity>
                   <PlayBackIcon width={24} height={24} fill="#FFF" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handlePlayPause()}>
                   {isPlaying ? (
-                    <Image source={require('../assets/icons/pause.png')} style={styles.playPauseIcon} />
+                    <Image
+                      source={require('../assets/icons/pause.png')}
+                      style={styles.playPauseIcon}
+                    />
                   ) : (
                     <PlayIcon width={48} height={48} fill="#FFF" />
                   )}
@@ -347,16 +379,16 @@ export default function ProfileMusicPlayerScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={toggleFavorite}>
                   {isFavorite ? (
-                    <HeartFilledIcon 
-                      width={24} 
-                      height={24} 
-                      fill="#FF0000"  // 红色填充
+                    <HeartFilledIcon
+                      width={24}
+                      height={24}
+                      fill="#FF0000" // 红色填充
                     />
                   ) : (
-                    <HeartOutlineIcon 
-                      width={24} 
-                      height={24} 
-                      fill="#FFFFFF"  // 白色轮廓
+                    <HeartOutlineIcon
+                      width={24}
+                      height={24}
+                      fill="#FFFFFF" // 白色轮廓
                     />
                   )}
                 </TouchableOpacity>
@@ -372,7 +404,7 @@ export default function ProfileMusicPlayerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000'
+    backgroundColor: '#000',
   },
   topImage: {
     width: '100%',

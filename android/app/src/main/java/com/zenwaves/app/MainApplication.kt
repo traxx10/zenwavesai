@@ -1,4 +1,4 @@
-package com.zenwaves.ai
+package com.zenwaves.app
 
 import android.app.Application
 import android.content.res.Configuration

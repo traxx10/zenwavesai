@@ -11,6 +11,7 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackIcon from '../assets/icons/back.svg';
+import { BASE_URL } from '@/utils/apis';
 
 interface CommissionRecord {
   id: string;
@@ -38,13 +39,16 @@ const CommissionRecordScreen = () => {
   const [summary, setSummary] = useState<CommissionSummary>({
     total_commission: 0,
     pending_commission: 0,
-    paid_commission: 0
+    paid_commission: 0,
   });
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchCommissionRecords = async (pageNum: number = 1, refresh: boolean = false) => {
+  const fetchCommissionRecords = async (
+    pageNum: number = 1,
+    refresh: boolean = false
+  ) => {
     try {
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) {
@@ -53,7 +57,7 @@ const CommissionRecordScreen = () => {
       }
 
       const response = await fetch(
-        `http://127.0.0.1:8000/users/${userId}/commission-records?page=${pageNum}&page_size=20`
+        `${BASE_URL}/users/${userId}/commission-records?page=${pageNum}&page_size=20`
       );
       const data = await response.json();
 
@@ -61,7 +65,7 @@ const CommissionRecordScreen = () => {
         if (refresh) {
           setRecords(data.data.records);
         } else {
-          setRecords(prev => [...prev, ...data.data.records]);
+          setRecords((prev) => [...prev, ...data.data.records]);
         }
         setSummary(data.data.summary);
         setHasMore(pageNum < data.data.pagination.total_pages);
@@ -96,23 +100,27 @@ const CommissionRecordScreen = () => {
     <View style={styles.recordItem}>
       <View style={styles.recordHeader}>
         <Text style={styles.recordType}>
-          {item.commission_type === 'direct' ? 'Direct Commission' : 'Team Commission'}
+          {item.commission_type === 'direct'
+            ? 'Direct Commission'
+            : 'Team Commission'}
         </Text>
-        <Text style={[
-          styles.recordStatus,
-          { color: item.status === 'paid' ? '#4CAF50' : '#FF9800' }
-        ]}>
+        <Text
+          style={[
+            styles.recordStatus,
+            { color: item.status === 'paid' ? '#4CAF50' : '#FF9800' },
+          ]}
+        >
           {item.status === 'paid' ? 'Paid' : 'Pending'}
         </Text>
       </View>
-      
+
       <View style={styles.recordDetails}>
         <Text style={styles.recordAmount}>$ {item.amount.toFixed(2)}</Text>
         <Text style={styles.recordDate}>
           {new Date(item.created_at).toLocaleDateString()}
         </Text>
       </View>
-      
+
       <View style={styles.recordInfo}>
         <Text style={styles.recordInfoText}>
           Rate: {(item.commission_rate * 100).toFixed(1)}%
@@ -128,7 +136,10 @@ const CommissionRecordScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <BackIcon width={24} height={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Commission Records</Text>
@@ -139,17 +150,23 @@ const CommissionRecordScreen = () => {
       <View style={styles.summaryContainer}>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Total Commission</Text>
-          <Text style={styles.summaryValue}>$ {summary.total_commission.toFixed(2)}</Text>
+          <Text style={styles.summaryValue}>
+            $ {summary.total_commission.toFixed(2)}
+          </Text>
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Pending</Text>
-          <Text style={styles.summaryValue}>$ {summary.pending_commission.toFixed(2)}</Text>
+          <Text style={styles.summaryValue}>
+            $ {summary.pending_commission.toFixed(2)}
+          </Text>
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Paid</Text>
-          <Text style={styles.summaryValue}>$ {summary.paid_commission.toFixed(2)}</Text>
+          <Text style={styles.summaryValue}>
+            $ {summary.paid_commission.toFixed(2)}
+          </Text>
         </View>
       </View>
 
@@ -157,7 +174,7 @@ const CommissionRecordScreen = () => {
       <FlatList
         data={records}
         renderItem={renderCommissionItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -265,4 +282,3 @@ const styles = StyleSheet.create({
   },
 });
 export default CommissionRecordScreen;
-

@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Colors } from '@/constants/Colors';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { fonts } from '@/hooks/useCacheResources';
 import { TopSpace } from '@/components/TopSpace';
@@ -11,10 +18,13 @@ import { EmailLoginButton } from './components/EmailLoginButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GradientButton } from '@/components/GradientButton';
 import { Video } from 'expo-av';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import {
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 import backgroundVideo from '@/assets/images/backgroundVideo.mp4';
 import { ResizeMode } from 'react-native-video'; // 添加导入语句
-
+import { BASE_URL } from '@/utils/apis';
 
 // Configure Google Sign-In
 export const Welcome = () => {
@@ -25,8 +35,10 @@ export const Welcome = () => {
   useEffect(() => {
     GoogleSignin.configure({
       scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-      webClientId: '693233744101-37vgt9n9ng0ie5dvg7lua2d5ld936v54.apps.googleusercontent.com',
-      iosClientId: '693233744101-ntrtnqf5fr2vv884ufb0se3lo4l03tb7.apps.googleusercontent.com', // 添加 iOS 客户端 ID
+      webClientId:
+        '693233744101-37vgt9n9ng0ie5dvg7lua2d5ld936v54.apps.googleusercontent.com',
+      iosClientId:
+        '693233744101-ntrtnqf5fr2vv884ufb0se3lo4l03tb7.apps.googleusercontent.com', // 添加 iOS 客户端 ID
     });
   }, []);
 
@@ -50,7 +62,7 @@ export const Welcome = () => {
       };
 
       try {
-        const loginResponse = await fetch('http://127.0.0.1:8000/users/google-login', {
+        const loginResponse = await fetch(`${BASE_URL}/users/google-login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -59,7 +71,7 @@ export const Welcome = () => {
         });
 
         const data = await loginResponse.json();
-        
+
         if (data.status === 'success' && data.user) {
           // 用户已存在，直接登录并跳转到 feed
           await AsyncStorage.clear();
@@ -76,24 +88,19 @@ export const Welcome = () => {
                   familyName: signInResponse.data.user.familyName,
                   email: signInResponse.data.user.email,
                   id: signInResponse.data.user.id,
-                  photo: signInResponse.data.user.photo
+                  photo: signInResponse.data.user.photo,
                 },
-                idToken: signInResponse.data.idToken
-              })
-            }
+                idToken: signInResponse.data.idToken,
+              }),
+            },
           } as any);
         } else {
           Alert.alert('Error', 'Login failed');
         }
-
       } catch (error) {
         console.error('Sign-in error:', error);
-        Alert.alert(
-          'Sign In Error',
-          'Failed to connect to server'
-        );
+        Alert.alert('Sign In Error', 'Failed to connect to server');
       }
-
     } catch (error: any) {
       handleSignInError(error);
     }
@@ -144,18 +151,25 @@ export const Welcome = () => {
         />
         <View style={styles.innerWrap}>
           <View style={styles.titleWrap}>
-            <Text style={styles.title}>Effortlessly Discover Your Ideal Soundscape</Text>
+            <Text style={styles.title}>
+              Effortlessly Discover Your Ideal Soundscape
+            </Text>
           </View>
           <TopSpace top={13} />
           <View style={styles.titleWrap}>
-          <Text style={styles.description}>
-  Discover curated music to boost focus, relaxation, and productivity. ZenWaves delivers the perfect soundscape for your vibe.
-</Text>
-
+            <Text style={styles.description}>
+              Discover curated music to boost focus, relaxation, and
+              productivity. ZenWaves delivers the perfect soundscape for your
+              vibe.
+            </Text>
           </View>
           <TopSpace top={32} />
 
-          <TouchableOpacity activeOpacity={0.8} onPress={signIn} style={styles.socialBtn}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={signIn}
+            style={styles.socialBtn}
+          >
             <GoogleIcon />
             <Text style={styles.loginGoogleText}>Login with Google</Text>
           </TouchableOpacity>
@@ -200,7 +214,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: '30%',
-
   },
   titleWrap: {
     width: '70%',

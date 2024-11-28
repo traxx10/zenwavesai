@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +15,7 @@ import BackIcon from '../assets/icons/back.svg'; // 导入 back.svg
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams } from 'expo-router';
 import { router } from 'expo-router';
-
+import { BASE_URL } from '@/utils/apis';
 
 interface Creator {
   id: string;
@@ -46,7 +54,9 @@ export default function CoeditedScreen() {
         const userId = await AsyncStorage.getItem('userId'); // 确保你已经存储了用户ID
         if (!userId || !friendId) return;
 
-        const response = await fetch(`http://127.0.0.1:8000/users/${userId}/friend-drafts/${friendId}`);
+        const response = await fetch(
+          `${BASE_URL}/users/${userId}/friend-drafts/${friendId}`
+        );
         const data = await response.json();
 
         if (data.status === 'success') {
@@ -54,7 +64,6 @@ export default function CoeditedScreen() {
         }
       } catch (error) {
         console.error('获取草稿列表失败:', error);
-       
       } finally {
         setIsLoading(false);
       }
@@ -92,19 +101,19 @@ export default function CoeditedScreen() {
           // 如果是创建者，跳转到 CreatorMusicEdit
           router.push({
             pathname: '/creatormusicedit',
-            params: { 
+            params: {
               draft_list_id: item.draft_list_id,
-              friend_id: friendId
-            }
+              friend_id: friendId,
+            },
           });
         } else {
           // 如果不是创建者，跳转到 FriendsMusicEdit
           router.push({
             pathname: '/friendsmusicedit',
-            params: { 
+            params: {
               draft_list_id: item.draft_list_id,
-              friend_id: friendId
-            }
+              friend_id: friendId,
+            },
           });
         }
       } catch (error) {
@@ -118,18 +127,18 @@ export default function CoeditedScreen() {
         onPress={handlePress}
         activeOpacity={isSelecting ? 0.7 : 1}
       >
-        <Image 
-          source={{ uri: item.music_info.cover_url }} 
-          style={styles.draftImage} 
+        <Image
+          source={{ uri: item.music_info.cover_url }}
+          style={styles.draftImage}
         />
         <Text style={styles.draftTitle}>{item.music_info.title}</Text>
-        
+
         {/* 创建者头像 */}
-        <Image 
+        <Image
           source={{ uri: item.creator.avatar_url }}
           style={styles.creatorAvatar}
         />
-        
+
         {isSelecting && (
           <View style={styles.selectCircle}>
             {selectedItems.includes(item.draft_list_id) && (
@@ -147,19 +156,22 @@ export default function CoeditedScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => (
-            isSelecting 
-              ? setSelectedItems(drafts.map(item => item.draft_list_id)) 
+        <TouchableOpacity
+          onPress={() =>
+            isSelecting
+              ? setSelectedItems(drafts.map((item) => item.draft_list_id))
               : navigation.goBack()
-          )}
+          }
         >
           <BackIcon width={24} height={24} style={styles.backIcon} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Co-Edited Library</Text>
-        <TouchableOpacity onPress={toggleSelectMode} style={styles.selectButton}>
+        <TouchableOpacity
+          onPress={toggleSelectMode}
+          style={styles.selectButton}
+        >
           <Text style={styles.selectButtonText}>
-            {isSelecting ? "Cancel" : "Select"}
+            {isSelecting ? 'Cancel' : 'Select'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -190,12 +202,24 @@ export default function CoeditedScreen() {
       {isSelecting && (
         <View style={styles.actionBar}>
           <TouchableOpacity
-            style={[styles.actionButton, selectedItems.length === 0 && styles.disabledButton]}
+            style={[
+              styles.actionButton,
+              selectedItems.length === 0 && styles.disabledButton,
+            ]}
             disabled={selectedItems.length === 0}
             onPress={() => alert(`Delete (${selectedItems.length}) items`)}
           >
-            <Ionicons name="trash-outline" size={18} color={selectedItems.length > 0 ? "#ff3b30" : "#ccc"} />
-            <Text style={[styles.actionText, { color: selectedItems.length > 0 ? "#ff3b30" : "#ccc" }]}>
+            <Ionicons
+              name="trash-outline"
+              size={18}
+              color={selectedItems.length > 0 ? '#ff3b30' : '#ccc'}
+            />
+            <Text
+              style={[
+                styles.actionText,
+                { color: selectedItems.length > 0 ? '#ff3b30' : '#ccc' },
+              ]}
+            >
               Delete ({selectedItems.length})
             </Text>
           </TouchableOpacity>

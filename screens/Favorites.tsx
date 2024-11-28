@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, StatusBar, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  StatusBar,
+  TextInput,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import HeartFilledIcon from '../assets/icons/heart-filled.svg';
 import BackIcon from '../assets/icons/back.svg';
 import SearchIcon from '../assets/icons/search.svg';
+import { BASE_URL } from '@/utils/apis';
 
 interface FavoriteMusic {
   id: string;
@@ -19,7 +29,9 @@ export default function FavoritesScreen() {
   const router = useRouter();
   const [favorites, setFavorites] = useState<FavoriteMusic[]>([]);
   const [searchText, setSearchText] = useState('');
-  const [filteredFavorites, setFilteredFavorites] = useState<FavoriteMusic[]>([]);
+  const [filteredFavorites, setFilteredFavorites] = useState<FavoriteMusic[]>(
+    []
+  );
 
   useEffect(() => {
     fetchUserFavorites();
@@ -34,7 +46,7 @@ export default function FavoritesScreen() {
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) return;
 
-      const response = await fetch(`http://127.0.0.1:8000/user-favorites/${userId}`);
+      const response = await fetch(`${BASE_URL}/user-favorites/${userId}`);
       const data = await response.json();
       if (data.status === 'success') {
         setFavorites(data.data.favorites);
@@ -46,23 +58,22 @@ export default function FavoritesScreen() {
 
   const renderFavoriteItem = ({ item }: { item: FavoriteMusic }) => (
     <TouchableOpacity
-      onPress={() => router.push({
-        pathname: '/musicplayer',
-        params: { id: item.id }
-      })}
+      onPress={() =>
+        router.push({
+          pathname: '/musicplayer',
+          params: { id: item.id },
+        })
+      }
       style={styles.favoriteItem}
     >
-      <Image 
-        source={{ uri: item.cover_url }} 
-        style={styles.coverImage} 
-      />
+      <Image source={{ uri: item.cover_url }} style={styles.coverImage} />
       <View style={styles.musicInfo}>
         <Text style={styles.musicTitle}>{item.title}</Text>
         <Text style={styles.creatorName}>{item.creator_name}</Text>
       </View>
-      <HeartFilledIcon 
-        width={24} 
-        height={24} 
+      <HeartFilledIcon
+        width={24}
+        height={24}
         fill="#FF0000"
         style={styles.heartIcon}
       />
@@ -77,25 +88,25 @@ export default function FavoritesScreen() {
     }
 
     const searchTerms = text.toLowerCase().split(' ');
-    const filtered = favorites.filter(music => {
+    const filtered = favorites.filter((music) => {
       const title = music.title.toLowerCase();
       const creator = music.creator_name.toLowerCase();
-      
-      return searchTerms.every(term => 
-        title.includes(term) || creator.includes(term)
+
+      return searchTerms.every(
+        (term) => title.includes(term) || creator.includes(term)
       );
     });
-    
+
     setFilteredFavorites(filtered);
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      
+
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
@@ -119,7 +130,7 @@ export default function FavoritesScreen() {
           returnKeyType="search"
         />
         {searchText ? (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => filterFavorites('')}
             style={styles.clearButton}
           >
@@ -133,7 +144,7 @@ export default function FavoritesScreen() {
         <FlatList
           data={filteredFavorites}
           renderItem={renderFavoriteItem}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
         />
@@ -250,4 +261,4 @@ const styles = StyleSheet.create({
     color: '#888',
     fontWeight: 'bold',
   },
-}); 
+});

@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import HandleIcon from '@/assets/icons/goup.svg';
 import BackIcon from '../assets/icons/back.svg';
 import MusicIcon from '../assets/icons/music.svg';
+import { BASE_URL } from '@/utils/apis';
 
 interface MusicEarnings {
   total_play_count: number;
@@ -58,7 +59,9 @@ const PlaybackRevenueScreen = () => {
         return;
       }
 
-      const response = await fetch(`http://127.0.0.1:8000/earnings/music-details/${userId}`);
+      const response = await fetch(
+        `${BASE_URL}/earnings/music-details/${userId}`
+      );
       const result = await response.json();
 
       if (response.ok) {
@@ -76,10 +79,10 @@ const PlaybackRevenueScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
-      
+
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >

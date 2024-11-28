@@ -15,17 +15,18 @@ import SearchIcon from '../assets/icons/search.svg';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from 'expo-router';
 import ShuffleIcon from '../assets/icons/Shuffle.svg';
+import { BASE_URL } from '@/utils/apis';
 
 const backgroundImages: { [key: string]: any } = {
-  'Meditation': require('../assets/images/Meditationbg.png'),
-  'Psychedelic': require('../assets/images/Psychedelicbg.png'),
-  'Brainwave': require('../assets/images/Brainwavebg.png'),
+  Meditation: require('../assets/images/Meditationbg.png'),
+  Psychedelic: require('../assets/images/Psychedelicbg.png'),
+  Brainwave: require('../assets/images/Brainwavebg.png'),
   'White Noise': require('../assets/images/WhiteNoisebg.png'),
-  'Sleep': require('../assets/images/Sleepbg.png'),
-  'Relaxation': require('../assets/images/Relaxationbg.png'),
-  'Pet': require('../assets/images/Petbg.png'),
-  'Baby': require('../assets/images/Babybg.png'),
-  'Focus': require('../assets/images/Focusbg.png'),
+  Sleep: require('../assets/images/Sleepbg.png'),
+  Relaxation: require('../assets/images/Relaxationbg.png'),
+  Pet: require('../assets/images/Petbg.png'),
+  Baby: require('../assets/images/Babybg.png'),
+  Focus: require('../assets/images/Focusbg.png'),
 };
 
 const FunctionalMusicPlaylistScreen = () => {
@@ -41,7 +42,9 @@ const FunctionalMusicPlaylistScreen = () => {
 
   const handleSearch = async (query: string) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/search-music/${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `${BASE_URL}/search-music/${encodeURIComponent(query)}`
+      );
       const data = await response.json();
       if (data.status === 'success') {
         setSearchResults(data.data.music_list);
@@ -55,27 +58,21 @@ const FunctionalMusicPlaylistScreen = () => {
     const handleNavigation = () => {
       router.push({
         pathname: '/musicplayer',
-        params: { id: item.id }
+        params: { id: item.id },
       });
     };
 
     return (
-      <TouchableOpacity 
-        style={styles.songItem}
-        onPress={handleNavigation}
-      >
-        <Image 
-          source={{ uri: item.cover_url || 'https://via.placeholder.com/60' }} 
-          style={styles.songCover} 
+      <TouchableOpacity style={styles.songItem} onPress={handleNavigation}>
+        <Image
+          source={{ uri: item.cover_url || 'https://via.placeholder.com/60' }}
+          style={styles.songCover}
         />
         <View style={styles.songDetails}>
           <Text style={styles.songTitle}>{item.title}</Text>
           <Text style={styles.songArtist}>{item.creator_name}</Text>
         </View>
-        <TouchableOpacity 
-          style={styles.playButton}
-          onPress={handleNavigation}
-        >
+        <TouchableOpacity style={styles.playButton} onPress={handleNavigation}>
           <PlayIcon width={24} height={24} />
         </TouchableOpacity>
       </TouchableOpacity>
@@ -95,9 +92,10 @@ const FunctionalMusicPlaylistScreen = () => {
             placeholder="Search your favorite song"
             placeholderTextColor="#C0BDBD"
             value={searchQuery}
-            onChangeText={text => {
+            onChangeText={(text) => {
               setSearchQuery(text);
-              if (text.length >= 2) {  // 至少输入2个字符才开始搜索
+              if (text.length >= 2) {
+                // 至少输入2个字符才开始搜索
                 handleSearch(text);
               }
             }}
@@ -119,7 +117,7 @@ const FunctionalMusicPlaylistScreen = () => {
 
   const fetchMusicList = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/search-music/${name}`);
+      const response = await fetch(`${BASE_URL}/search-music/${name}`);
       const data = await response.json();
       if (data.status === 'success') {
         setSongs(data.data.music_list);
@@ -135,19 +133,21 @@ const FunctionalMusicPlaylistScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-
-      <Image
-        source={bgImage}
-        style={styles.background}
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content"
       />
+
+      <Image source={bgImage} style={styles.background} />
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <ListHeader />
         <View style={styles.songListContainer}>
           <Text style={styles.sectionTitle}>Recent Song</Text>
-          {searchResults.length > 0 ? searchResults.map(item => renderSongItem({ item })) 
-                                   : songs.map(item => renderSongItem({ item }))}
+          {searchResults.length > 0
+            ? searchResults.map((item) => renderSongItem({ item }))
+            : songs.map((item) => renderSongItem({ item }))}
         </View>
       </ScrollView>
     </View>
@@ -272,5 +272,4 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-
 });

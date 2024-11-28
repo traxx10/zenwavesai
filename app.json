@@ -16,7 +16,7 @@
     "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.zenwaves.ai",
+      "bundleIdentifier": "com.zenwaves.app",
       // "infoPlist": {
       //   "UIBackgroundModes": ["audio"]
       // },
@@ -29,7 +29,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.zenwaves.ai",
+      "package": "com.zenwaves.app",
       "config": {
         "googleMobileAdsAppId": "ca-app-pub-4165595262807711~4716615029"
       }

@@ -16,7 +16,7 @@ import BackIcon from '../assets/icons/back.svg';
 import MoreIcon from '../assets/icons/more.svg';
 import SearchIcon from '../assets/icons/search.svg';
 import PlayIcon from '../assets/icons/ic-play.svg';
-
+import { BASE_URL } from '@/utils/apis';
 
 interface MusicItem {
   id: string;
@@ -38,18 +38,21 @@ const MusicRankingScreen = () => {
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchMusicRanking = async (pageNum: number, refresh: boolean = false) => {
+  const fetchMusicRanking = async (
+    pageNum: number,
+    refresh: boolean = false
+  ) => {
     console.log(`开始获取音乐排行榜数据 - 页码: ${pageNum}, 刷新: ${refresh}`);
     try {
-      const url = `http://127.0.0.1:8000/music-ranking?page=${pageNum}&page_size=20`;
+      const url = `${BASE_URL}/music-ranking?page=${pageNum}&page_size=20`;
       console.log('请求URL:', url);
-      
+
       const response = await fetch(url);
       console.log('响应状态:', response.status);
-      
+
       const data = await response.json();
       console.log('响应数据:', data);
-      
+
       if (data.status === 'success') {
         const newList = data.data.music_list;
         console.log(`获取到 ${newList.length} 条音乐数据`);
@@ -74,7 +77,7 @@ const MusicRankingScreen = () => {
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
       fetchMusicRanking(page + 1);
     }
   };
@@ -87,10 +90,7 @@ const MusicRankingScreen = () => {
 
   const renderMusicItem = ({ item }: { item: MusicItem }) => (
     <View style={styles.musicItem}>
-      <Image 
-        source={{ uri: item.cover_url }} 
-        style={styles.coverImage} 
-      />
+      <Image source={{ uri: item.cover_url }} style={styles.coverImage} />
       <View style={styles.musicDetails}>
         <Text style={styles.musicTitle}>{item.title}</Text>
         <Text style={styles.musicAuthor}>{item.author}</Text>
@@ -107,8 +107,8 @@ const MusicRankingScreen = () => {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity 
-          style={styles.retryButton} 
+        <TouchableOpacity
+          style={styles.retryButton}
           onPress={() => fetchMusicRanking(1, true)}
         >
           <Text style={styles.retryText}>Retry</Text>
@@ -120,7 +120,7 @@ const MusicRankingScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -155,11 +155,11 @@ const MusicRankingScreen = () => {
         onEndReachedThreshold={0.5}
         refreshing={refreshing}
         onRefresh={handleRefresh}
-        ListFooterComponent={() => (
+        ListFooterComponent={() =>
           loading && !refreshing ? (
             <ActivityIndicator style={styles.loader} color="#000" />
           ) : null
-        )}
+        }
       />
 
       {/* More Menu Modal */}
@@ -169,28 +169,37 @@ const MusicRankingScreen = () => {
         animationType="fade"
         onRequestClose={() => setShowMoreMenu(false)}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
-          activeOpacity={1} 
+          activeOpacity={1}
           onPress={() => setShowMoreMenu(false)}
         >
           <View style={styles.moreMenu}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => {
-              // Sort by plays
-              setShowMoreMenu(false);
-            }}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                // Sort by plays
+                setShowMoreMenu(false);
+              }}
+            >
               <Text style={styles.menuText}>Sort by Plays</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => {
-              // Sort by duration
-              setShowMoreMenu(false);
-            }}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                // Sort by duration
+                setShowMoreMenu(false);
+              }}
+            >
               <Text style={styles.menuText}>Sort by Duration</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => {
-              // Filter favorites
-              setShowMoreMenu(false);
-            }}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                // Filter favorites
+                setShowMoreMenu(false);
+              }}
+            >
               <Text style={styles.menuText}>Show Favorites Only</Text>
             </TouchableOpacity>
           </View>

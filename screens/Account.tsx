@@ -1,11 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Switch, ScrollView, StatusBar, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Switch,
+  ScrollView,
+  StatusBar,
+  Alert,
+} from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faUser, faGlobe, faFileAlt, faCog, faBell, faInfoCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faUser,
+  faGlobe,
+  faFileAlt,
+  faCog,
+  faBell,
+  faInfoCircle,
+  faSignOutAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import BackIcon from '../assets/icons/back.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 interface UserInfo {
   first_name: string;
@@ -18,7 +37,8 @@ interface UserInfo {
 export default function AccountScreen() {
   const router = useRouter();
   const [pushNotifications, setPushNotifications] = useState(true);
-  const [promotionalNotifications, setPromotionalNotifications] = useState(false);
+  const [promotionalNotifications, setPromotionalNotifications] =
+    useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [userId, setUserId] = useState<string>('');
 
@@ -45,7 +65,7 @@ export default function AccountScreen() {
 
   const fetchUserInfo = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/user/${userId}`);
+      const response = await fetch(`${BASE_URL}/user/${userId}`);
       const data = await response.json();
       setUserInfo(data.user_info);
     } catch (error) {
@@ -54,9 +74,13 @@ export default function AccountScreen() {
   };
 
   const handleAvatarUpload = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert("Permission required", "You need to allow access to your photos.");
+      Alert.alert(
+        'Permission required',
+        'You need to allow access to your photos.'
+      );
       return;
     }
 
@@ -75,7 +99,7 @@ export default function AccountScreen() {
       } as any);
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/update-avatar/${userId}`, {
+        const response = await fetch(`${BASE_URL}/update-avatar/${userId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -85,39 +109,35 @@ export default function AccountScreen() {
         const data = await response.json();
 
         if (data.avatar_url) {
-          Alert.alert("Success", "Avatar updated successfully!");
+          Alert.alert('Success', 'Avatar updated successfully!');
           fetchUserInfo();
         }
       } catch (error) {
         console.log('Error uploading avatar:', error);
-        Alert.alert("Error", "Failed to update avatar. Please try again.");
+        Alert.alert('Error', 'Failed to update avatar. Please try again.');
       }
     }
   };
 
   const handleLogout = async () => {
-    Alert.alert(
-      "Confirm Logout",
-      "Are you sure you want to logout?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Logout",
-          onPress: async () => {
-            try {
-              await AsyncStorage.clear();
-              router.replace('/onboarding');
-            } catch (error) {
-              console.log('Error during logout:', error);
-              Alert.alert("Error", "Failed to logout. Please try again.");
-            }
+    Alert.alert('Confirm Logout', 'Are you sure you want to logout?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Logout',
+        onPress: async () => {
+          try {
+            await AsyncStorage.clear();
+            router.replace('/onboarding');
+          } catch (error) {
+            console.log('Error during logout:', error);
+            Alert.alert('Error', 'Failed to logout. Please try again.');
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   return (
@@ -125,7 +145,10 @@ export default function AccountScreen() {
       <StatusBar hidden={true} />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <BackIcon width={24} height={24} fill="#000" />
           </TouchableOpacity>
           <Text style={styles.headerText}>Account</Text>
@@ -134,13 +157,23 @@ export default function AccountScreen() {
         <View style={styles.profileSection}>
           <TouchableOpacity onPress={handleAvatarUpload}>
             <Image
-              source={{ uri: userInfo?.avatar_url || 'https://example.com/avatar.jpg' }}
+              source={{
+                uri: userInfo?.avatar_url || 'https://example.com/avatar.jpg',
+              }}
               style={styles.profileImage}
             />
           </TouchableOpacity>
-          <Text style={styles.profileName}>{userInfo ? `${userInfo.first_name} ${userInfo.last_name}` : 'Loading...'}</Text>
-          {userInfo?.email && <Text style={styles.profileEmail}>{userInfo.email}</Text>}
-          {userInfo?.phone && <Text style={styles.profilePhone}>Phone: {userInfo.phone}</Text>}
+          <Text style={styles.profileName}>
+            {userInfo
+              ? `${userInfo.first_name} ${userInfo.last_name}`
+              : 'Loading...'}
+          </Text>
+          {userInfo?.email && (
+            <Text style={styles.profileEmail}>{userInfo.email}</Text>
+          )}
+          {userInfo?.phone && (
+            <Text style={styles.profilePhone}>Phone: {userInfo.phone}</Text>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -172,7 +205,7 @@ export default function AccountScreen() {
             <Switch
               value={pushNotifications}
               onValueChange={setPushNotifications}
-              thumbColor={pushNotifications ? "#34C759" : "#f4f3f4"}
+              thumbColor={pushNotifications ? '#34C759' : '#f4f3f4'}
             />
           </View>
           <View style={styles.menuItem}>
@@ -181,7 +214,7 @@ export default function AccountScreen() {
             <Switch
               value={promotionalNotifications}
               onValueChange={setPromotionalNotifications}
-              thumbColor={promotionalNotifications ? "#34C759" : "#f4f3f4"}
+              thumbColor={promotionalNotifications ? '#34C759' : '#f4f3f4'}
             />
           </View>
         </View>

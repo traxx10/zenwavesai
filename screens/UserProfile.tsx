@@ -1,10 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, TextInput, FlatList, StatusBar, ScrollView, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  FlatList,
+  StatusBar,
+  ScrollView,
+  Alert,
+} from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import SearchIcon from '../assets/icons/search.svg';
 import FilterIcon from '../assets/icons/Filter.svg';
 import SmallPlayIcon from '../assets/icons/smallplay.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 export default function UserProfileScreen() {
   const router = useRouter();
@@ -34,41 +46,42 @@ export default function UserProfileScreen() {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/user/${userId}`);
+      const response = await fetch(`${BASE_URL}/user/${userId}`);
       const data = await response.json();
-      
+
       if (response.ok) {
         if (data && data.user_info) {
           const userInfo = data.user_info;
-          
+
           setUserProfile({
             name: `${userInfo.first_name} ${userInfo.last_name}`,
             profileImage: userInfo.avatar_url,
             following: 45, // Replace with dynamic data if available
             followers: '30M', // Replace with dynamic data if available
             creations: data.creations_count || 0, // Use dynamic creations count
-            description: 'About Nagaland & Northeast. For credit or removal DM. Negativity not entertained & will be blocked.',
+            description:
+              'About Nagaland & Northeast. For credit or removal DM. Negativity not entertained & will be blocked.',
           });
         } else {
           console.error('User info is missing in the response:', data);
-          Alert.alert("Error", "User information is missing.");
+          Alert.alert('Error', 'User information is missing.');
         }
       } else {
         console.error('Error fetching user profile:', data.detail);
-        Alert.alert("Error", data.detail || "Failed to load user profile.");
+        Alert.alert('Error', data.detail || 'Failed to load user profile.');
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      Alert.alert("Error", "Failed to load user profile.");
+      Alert.alert('Error', 'Failed to load user profile.');
     }
   };
 
   const fetchUserMusic = async (userId: string) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/users/${userId}/music`);
+      const response = await fetch(`${BASE_URL}/users/${userId}/music`);
       const data = await response.json();
 
-      if (response.ok && data.status === "success") {
+      if (response.ok && data.status === 'success') {
         const { music_list, music_count } = data.data;
 
         setCreations(music_list);
@@ -92,11 +105,15 @@ export default function UserProfileScreen() {
         return;
       }
 
-      const response = await fetch(`http://127.0.0.1:8000/users/${currentUserId}/following`);
+      const response = await fetch(
+        `${BASE_URL}/users/${currentUserId}/following`
+      );
       const data = await response.json();
 
       if (response.ok && data.following) {
-        const isUserFollowing = data.following.some((user: any) => user.id === userId);
+        const isUserFollowing = data.following.some(
+          (user: any) => user.id === userId
+        );
         setIsFollowing(isUserFollowing);
       } else {
         console.log('No following data:', data);
@@ -115,7 +132,9 @@ export default function UserProfileScreen() {
       }
 
       const targetUserId = userId; // 当前页面的 userId
-      const url = `http://127.0.0.1:8000/users/${currentUserId}/${isFollowing ? 'unfollow' : 'follow'}/${targetUserId}`;
+      const url = `${BASE_URL}/users/${currentUserId}/${
+        isFollowing ? 'unfollow' : 'follow'
+      }/${targetUserId}`;
       const method = isFollowing ? 'DELETE' : 'POST';
 
       const response = await fetch(url, {
@@ -131,11 +150,15 @@ export default function UserProfileScreen() {
       } else {
         const errorData = await response.json();
         console.error(`Error updating follow status:`, errorData);
-        Alert.alert("Error", errorData.detail || `Failed to ${isFollowing ? 'unfollow' : 'follow'}.`);
+        Alert.alert(
+          'Error',
+          errorData.detail ||
+            `Failed to ${isFollowing ? 'unfollow' : 'follow'}.`
+        );
       }
     } catch (error) {
       console.error('Error in toggleFollowStatus:', error);
-      Alert.alert("Error", `Failed to ${isFollowing ? 'unfollow' : 'follow'}.`);
+      Alert.alert('Error', `Failed to ${isFollowing ? 'unfollow' : 'follow'}.`);
     }
   };
 
@@ -175,23 +198,26 @@ export default function UserProfileScreen() {
       <StatusBar barStyle="dark-content" />
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={handleBack}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
 
         <View style={styles.profileContainer}>
           <View style={styles.gradientCircle}>
-            <Image 
-              source={{ uri: userProfile.profileImage || 'https://example.com/path/to/default/image.png' }} 
-              style={styles.profileImage} 
+            <Image
+              source={{
+                uri:
+                  userProfile.profileImage ||
+                  'https://example.com/path/to/default/image.png',
+              }}
+              style={styles.profileImage}
             />
           </View>
           <Text style={styles.profileName}>{userProfile.name}</Text>
-          <Text style={styles.profileDescription}>{userProfile.description}</Text>
-          
+          <Text style={styles.profileDescription}>
+            {userProfile.description}
+          </Text>
+
           <View style={styles.statsContainer}>
             <View style={styles.stat}>
               <Text style={styles.statNumber}>{userProfile.following}</Text>
@@ -208,15 +234,25 @@ export default function UserProfileScreen() {
           </View>
 
           <View style={styles.actionButtons}>
-            <TouchableOpacity 
-              style={[styles.followButton, isFollowing ? styles.unfollowButton : null]}
+            <TouchableOpacity
+              style={[
+                styles.followButton,
+                isFollowing ? styles.unfollowButton : null,
+              ]}
               onPress={toggleFollowStatus}
             >
-              <Text style={styles.followButtonText}>{isFollowing ? 'Unfollow' : 'Follow'}</Text>
+              <Text style={styles.followButtonText}>
+                {isFollowing ? 'Unfollow' : 'Follow'}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.messageButton}
-              onPress={() => router.push({ pathname: '/chat', params: { targetUserId: userId } })}
+              onPress={() =>
+                router.push({
+                  pathname: '/chat',
+                  params: { targetUserId: userId },
+                })
+              }
             >
               <Text style={styles.messageButtonText}>Message</Text>
             </TouchableOpacity>
@@ -224,7 +260,9 @@ export default function UserProfileScreen() {
         </View>
 
         <View style={styles.creationsHeader}>
-          <Text style={styles.creationsTitle}>All Creations ({userProfile.creations})</Text>
+          <Text style={styles.creationsTitle}>
+            All Creations ({userProfile.creations})
+          </Text>
           <FilterIcon width={20} height={20} />
         </View>
 

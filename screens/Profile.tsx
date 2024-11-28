@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, TextInput, Animated, Easing } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  Animated,
+  Easing,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import SearchIcon from '../assets/icons/search.svg';
 import FilterIcon from '../assets/icons/Filter.svg';
@@ -7,6 +17,7 @@ import SmallPlayIcon from '../assets/icons/smallplay.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CrownIcon from '../assets/icons/Crown.svg';
 import { useFocusEffect } from '@react-navigation/native';
+import { BASE_URL } from '@/utils/apis';
 
 const profile = {
   name: 'Emmanuel Robertsen',
@@ -79,7 +90,7 @@ export default function ProfileScreen() {
       '#4B0082',
       '#8A2BE2',
       '#FF0080',
-    ]
+    ],
   });
 
   const fetchData = async (isRefresh = false) => {
@@ -88,26 +99,34 @@ export default function ProfileScreen() {
       if (!userId) return;
 
       console.log('Fetching data... page:', isRefresh ? 1 : page);
-      const response = await fetch(`http://127.0.0.1:8000/text-music-history/${userId}?limit=15&page=${isRefresh ? 1 : page}`);
+      const response = await fetch(
+        `${BASE_URL}/text-music-history/${userId}?limit=15&page=${
+          isRefresh ? 1 : page
+        }`
+      );
       const data = await response.json();
-      
+
       const sortedCreations = data.history.sort((a: any, b: any) => {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return (
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
       });
 
       if (isRefresh) {
         setCreations(sortedCreations);
       } else {
-        setCreations(prev => {
+        setCreations((prev) => {
           const existingIds = new Set(prev.map((item: Creation) => item.id));
-          const newItems = sortedCreations.filter((item: Creation) => !existingIds.has(item.id));
+          const newItems = sortedCreations.filter(
+            (item: Creation) => !existingIds.has(item.id)
+          );
           return [...prev, ...newItems];
         });
       }
-      
+
       setHasMore(sortedCreations.length > 0);
       setPage(isRefresh ? 2 : page + 1);
-      
+
       if (data.playlists) {
         setPlaylists(data.playlists);
       }
@@ -121,7 +140,7 @@ export default function ProfileScreen() {
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) return;
 
-      const response = await fetch(`http://127.0.0.1:8000/users/${userId}/profile`);
+      const response = await fetch(`${BASE_URL}/users/${userId}/profile`);
       const data = await response.json();
       setUserInfo(data.data);
     } catch (error) {
@@ -134,9 +153,11 @@ export default function ProfileScreen() {
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) return;
 
-      const response = await fetch(`http://127.0.0.1:8000/users/${userId}/active-drafts/count`);
+      const response = await fetch(
+        `${BASE_URL}/users/${userId}/active-drafts/count`
+      );
       const data = await response.json();
-      
+
       if (data.status === 'success') {
         setActiveDraftsCount(data.data.active_drafts_count);
       }
@@ -149,7 +170,7 @@ export default function ProfileScreen() {
     await Promise.all([
       fetchData(true),
       fetchUserInfo(),
-      fetchActiveDraftsCount()
+      fetchActiveDraftsCount(),
     ]);
   };
 
@@ -182,29 +203,36 @@ export default function ProfileScreen() {
           source={require('../assets/images/profile.png')}
           style={styles.profileBackgroundImage}
         />
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.crownButton}
           onPress={() => router.push('/subscribe')}
         >
           <CrownIcon width={24} height={24} />
         </TouchableOpacity>
-        <Animated.View style={[styles.gradientCircle, { borderColor: gradientBorderColor }]}>
-          <Image 
-            source={{ uri: userInfo?.avatar_url || profile.profileImage }} 
-            style={styles.profileImage} 
+        <Animated.View
+          style={[styles.gradientCircle, { borderColor: gradientBorderColor }]}
+        >
+          <Image
+            source={{ uri: userInfo?.avatar_url || profile.profileImage }}
+            style={styles.profileImage}
           />
         </Animated.View>
         <Text style={styles.profileName}>
-          {userInfo ? `${userInfo.first_name} ${userInfo.last_name}` : profile.name}
+          {userInfo
+            ? `${userInfo.first_name} ${userInfo.last_name}`
+            : profile.name}
         </Text>
-        {userInfo?.subscription_type && 
-          (userInfo.subscription_type === 'basic' || userInfo.subscription_type === 'premium') && (
-          <View style={styles.subscriptionBadge}>
-            <Text style={styles.subscriptionType}>
-              {userInfo.subscription_type.charAt(0).toUpperCase() + userInfo.subscription_type.slice(1)} Member
-            </Text>
-          </View>
-        )}
+        {userInfo?.subscription_type &&
+          (userInfo.subscription_type === 'basic' ||
+            userInfo.subscription_type === 'premium') && (
+            <View style={styles.subscriptionBadge}>
+              <Text style={styles.subscriptionType}>
+                {userInfo.subscription_type.charAt(0).toUpperCase() +
+                  userInfo.subscription_type.slice(1)}{' '}
+                Member
+              </Text>
+            </View>
+          )}
         <View style={styles.statsContainer}>
           <View style={styles.stat}>
             <Text style={styles.statNumber}>{profile.following}</Text>
@@ -220,13 +248,13 @@ export default function ProfileScreen() {
           </View>
         </View>
         <View style={styles.actionButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.editButton}
             onPress={() => router.push('/account')}
           >
             <Text style={styles.buttonText}>Edit profile</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.inviteButton}
             onPress={() => router.push('/invitefriends')}
           >
@@ -242,18 +270,22 @@ export default function ProfileScreen() {
         <Text style={styles.inactiveTab}>Saved</Text>
       </View>
       <View style={styles.creationsHeader}>
-        <Text style={styles.creationsTitle}>All Creations ({creations.length})</Text>
+        <Text style={styles.creationsTitle}>
+          All Creations ({creations.length})
+        </Text>
         <FilterIcon width={20} height={20} style={styles.filterIcon} />
       </View>
       <SearchInput />
       {activeDraftsCount > 0 && (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.draftContainer}
           onPress={() => router.push('/drafts')}
         >
-          <Image 
-            source={{ uri: 'https://d38pz48g69zit7.cloudfront.net/covers/df223973-db7c-4620-ab2c-cf5afd2ecfe7.jpg' }} 
-            style={styles.draftImage} 
+          <Image
+            source={{
+              uri: 'https://d38pz48g69zit7.cloudfront.net/covers/df223973-db7c-4620-ab2c-cf5afd2ecfe7.jpg',
+            }}
+            style={styles.draftImage}
           />
           <View style={styles.draftContent}>
             <View style={styles.draftTitleContainer}>
@@ -264,25 +296,33 @@ export default function ProfileScreen() {
           </View>
         </TouchableOpacity>
       )}
-      
+
       {playlists.map((playlist) => (
-        <TouchableOpacity 
+        <TouchableOpacity
           key={playlist.id}
           style={styles.draftContainer}
-          onPress={() => router.push({
-            pathname: "/musicplaylist",
-            params: { playlistId: playlist.id }
-          })}
+          onPress={() =>
+            router.push({
+              pathname: '/musicplaylist',
+              params: { playlistId: playlist.id },
+            })
+          }
         >
-          <Image 
-            source={{ uri: playlist.cover_url || 'https://d38pz48g69zit7.cloudfront.net/covers/default-playlist.jpg' }} 
-            style={styles.draftImage} 
+          <Image
+            source={{
+              uri:
+                playlist.cover_url ||
+                'https://d38pz48g69zit7.cloudfront.net/covers/default-playlist.jpg',
+            }}
+            style={styles.draftImage}
           />
           <View style={styles.draftContent}>
             <View style={styles.draftTitleContainer}>
               <Text style={styles.draftTitle}>{playlist.title}</Text>
               <Text style={styles.draftCount}>
-                {playlist.is_public ? 'Public Playlist' : 'Private Playlist'} • {playlist.music_count} {playlist.music_count === 1 ? 'song' : 'songs'}
+                {playlist.is_public ? 'Public Playlist' : 'Private Playlist'} •{' '}
+                {playlist.music_count}{' '}
+                {playlist.music_count === 1 ? 'song' : 'songs'}
               </Text>
             </View>
             <Text style={styles.draftLabel}>Playlist</Text>
@@ -309,14 +349,14 @@ export default function ProfileScreen() {
   const SearchInput = () => (
     <View style={styles.searchContainer}>
       <SearchIcon width={20} height={20} style={styles.searchIcon} />
-      <TextInput 
-        style={styles.searchInput} 
-        placeholder="Search" 
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search"
         placeholderTextColor="#999"
         value={searchQuery}
         onChangeText={setSearchQuery}
         onSubmitEditing={() => {
-          const filtered = creations.filter(item => 
+          const filtered = creations.filter((item) =>
             item.title.toLowerCase().includes(searchQuery.toLowerCase())
           );
           setFilteredCreations(filtered);

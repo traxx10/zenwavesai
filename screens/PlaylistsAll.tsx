@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Image, 
-  FlatList, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  FlatList,
+  TouchableOpacity,
   StatusBar,
-  ActivityIndicator 
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import BackIcon from '../assets/icons/back.svg';
-
+import { BASE_URL } from '@/utils/apis';
 interface Playlist {
   id: string;
   title: string;
@@ -31,7 +31,7 @@ const PlaylistsAllScreen = () => {
 
   const fetchPlaylists = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/playlists/all');
+      const response = await fetch(`${BASE_URL}/playlists/all`);
       const data = await response.json();
       if (data.status === 'success') {
         setPlaylists(data.data.playlists);
@@ -46,17 +46,16 @@ const PlaylistsAllScreen = () => {
   };
 
   const renderPlaylist = ({ item }: { item: Playlist }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.playlistItem}
-      onPress={() => router.push({
-        pathname: '/playlistplayer',
-        params: { id: item.id }
-      })}
+      onPress={() =>
+        router.push({
+          pathname: '/playlistplayer',
+          params: { id: item.id },
+        })
+      }
     >
-      <Image 
-        source={{ uri: item.cover_url }} 
-        style={styles.playlistImage} 
-      />
+      <Image source={{ uri: item.cover_url }} style={styles.playlistImage} />
       <View style={styles.playlistDetails}>
         <Text style={styles.playlistTitle}>{item.title}</Text>
         <Text style={styles.playlistSongs}>{item.total_tracks} Songs</Text>
@@ -68,10 +67,7 @@ const PlaylistsAllScreen = () => {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity 
-          style={styles.retryButton} 
-          onPress={fetchPlaylists}
-        >
+        <TouchableOpacity style={styles.retryButton} onPress={fetchPlaylists}>
           <Text style={styles.retryText}>重试</Text>
         </TouchableOpacity>
       </View>
@@ -81,7 +77,7 @@ const PlaylistsAllScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -99,13 +95,13 @@ const PlaylistsAllScreen = () => {
         numColumns={2}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={() => (
+        ListEmptyComponent={() =>
           loading ? (
             <ActivityIndicator style={styles.loader} color="#000" />
           ) : (
             <Text style={styles.emptyText}>暂无播放列表</Text>
           )
-        )}
+        }
       />
     </View>
   );

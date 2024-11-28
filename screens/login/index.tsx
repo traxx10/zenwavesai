@@ -17,6 +17,7 @@ import ArrowBackIcon from '@/assets/icons/back.svg';
 import { TopSpace } from '@/components/TopSpace';
 import { style } from './styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 export const Login = () => {
   const router = useRouter();
@@ -37,7 +38,7 @@ export const Login = () => {
 
     try {
       // Send the request to the FastAPI server
-      const response = await fetch('http://127.0.0.1:8000/login/', {
+      const response = await fetch(`${BASE_URL}/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

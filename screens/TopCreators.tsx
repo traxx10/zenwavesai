@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import BackIcon from '../assets/icons/back.svg';
 import MoreIcon from '../assets/icons/more.svg';
 import SearchIcon from '../assets/icons/search.svg';
+import { BASE_URL } from '@/utils/apis';
 
 interface CreatorItem {
   id: string;
@@ -32,14 +33,16 @@ const TopCreatorsScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
-  const [filteredCreatorList, setFilteredCreatorList] = useState<CreatorItem[]>([]);
+  const [filteredCreatorList, setFilteredCreatorList] = useState<CreatorItem[]>(
+    []
+  );
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchCreators = async (pageNum: number, refresh: boolean = false) => {
     try {
-      const url = `http://127.0.0.1:8000/top-creators?page=${pageNum}&page_size=20`;
+      const url = `${BASE_URL}/top-creators?page=${pageNum}&page_size=20`;
       const response = await fetch(url);
       const data = await response.json();
 
@@ -110,7 +113,10 @@ const TopCreatorsScreen = () => {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => fetchCreators(1, true)}>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => fetchCreators(1, true)}
+        >
           <Text style={styles.retryText}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -163,9 +169,11 @@ const TopCreatorsScreen = () => {
             </Text>
           </View>
         )}
-        ListFooterComponent={() => (
-          loading && !refreshing ? <ActivityIndicator style={styles.loader} color="#000" /> : null
-        )}
+        ListFooterComponent={() =>
+          loading && !refreshing ? (
+            <ActivityIndicator style={styles.loader} color="#000" />
+          ) : null
+        }
       />
     </View>
   );
@@ -276,5 +284,3 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
-
- 

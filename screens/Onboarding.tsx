@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Purchases from 'react-native-purchases';
+import { PURCHASES_API_KEY } from '@/utils/apis';
 
 const { width } = Dimensions.get('window');
 
@@ -20,8 +22,11 @@ export default function OnboardingScreen() {
   useEffect(() => {
     const checkUserId = async () => {
       const userId = await AsyncStorage.getItem('userId');
+
       if (userId) {
-        router.push('/feed'); // 如果存在 userId，跳转到 feed 页面
+        await Purchases.logIn(userId);
+        // router.push('/feed'); // 如果存在 userId，跳转到 feed 页面
+        router.push('/(tabs)/feed');
       }
     };
 

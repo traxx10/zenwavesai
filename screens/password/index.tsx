@@ -19,6 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { style } from './styles';
 import { PasswordField } from '@/components/PasswordField';
 import { GradientButton } from '@/components/GradientButton';
+import { BASE_URL } from '@/utils/apis';
 
 export const Password = () => {
   const router = useRouter();
@@ -49,7 +50,7 @@ export const Password = () => {
       }
 
       // Send login request to FastAPI
-      const response = await fetch('http://127.0.0.1:8000/email-login/', {
+      const response = await fetch(`${BASE_URL}/email-login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +66,10 @@ export const Password = () => {
         console.log('User ID stored:', result.user_id);
         router.push('/feed');
       } else {
-        Alert.alert('Error', result.message || 'Incorrect credentials. Please try again.');
+        Alert.alert(
+          'Error',
+          result.message || 'Incorrect credentials. Please try again.'
+        );
       }
     } catch (error) {
       console.error('Error during login verification:', error);
@@ -79,7 +83,10 @@ export const Password = () => {
     <SafeAreaView style={style.mainWrap}>
       <StatusBar style="light" />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={style.innerWrap}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={style.innerWrap}
+        >
           <View>
             <TopSpace top={Platform.OS === 'ios' ? 11 : 30} />
             <TouchableOpacity onPress={() => router.back()}>
@@ -99,12 +106,19 @@ export const Password = () => {
             />
 
             <TopSpace top={36} />
-            <TouchableOpacity style={{ alignSelf: 'center' }} onPress={() => router.push('/resetpassword')}>
+            <TouchableOpacity
+              style={{ alignSelf: 'center' }}
+              onPress={() => router.push('/resetpassword')}
+            >
               <Text style={style.forgotPassword}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
           <View>
-            <GradientButton btnWidth="100%" title={'Login'} handleClick={handleLogin} />
+            <GradientButton
+              btnWidth="100%"
+              title={'Login'}
+              handleClick={handleLogin}
+            />
             <TopSpace top={Platform.OS === 'ios' ? 30 : 60} />
           </View>
         </KeyboardAvoidingView>

@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, ImageBackground, Platform, Dimensions } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ImageBackground,
+  Platform,
+  Dimensions,
+} from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 
 // Import SVG Icons
@@ -17,8 +25,7 @@ const isSmallDevice = width < 375;
 
 export default function AppLayout() {
   return (
-    <View style={styles.container}> 
-  
+    <View style={styles.container}>
       <Tabs
         screenOptions={({ route }) => ({
           headerShown: false,
@@ -56,16 +63,32 @@ export default function AppLayout() {
             let IconComponent;
             switch (route.name) {
               case 'feed':
-                IconComponent = focused ? <FeedIconClick width={26} height={26} /> : <FeedIcon width={26} height={26} />;
+                IconComponent = focused ? (
+                  <FeedIconClick width={26} height={26} />
+                ) : (
+                  <FeedIcon width={26} height={26} />
+                );
                 break;
               case 'connect':
-                IconComponent = focused ? <ConnectIconClick width={26} height={26} /> : <ConnectIcon width={26} height={26} />;
+                IconComponent = focused ? (
+                  <ConnectIconClick width={26} height={26} />
+                ) : (
+                  <ConnectIcon width={26} height={26} />
+                );
                 break;
               case 'discover':
-                IconComponent = focused ? <DiscoverIconClick width={26} height={26} /> : <DiscoverIcon width={26} height={26} />;
+                IconComponent = focused ? (
+                  <DiscoverIconClick width={26} height={26} />
+                ) : (
+                  <DiscoverIcon width={26} height={26} />
+                );
                 break;
               case 'profile':
-                IconComponent = focused ? <ProfileIconClick width={26} height={26} /> : <ProfileIcon width={26} height={26} />;
+                IconComponent = focused ? (
+                  <ProfileIconClick width={26} height={26} />
+                ) : (
+                  <ProfileIcon width={26} height={26} />
+                );
                 break;
               default:
                 IconComponent = null;
@@ -74,33 +97,33 @@ export default function AppLayout() {
           },
         })}
       >
-        <Tabs.Screen 
-          name="feed" 
-          options={{ 
-            tabBarLabel: "Feed", 
-            tabBarItemStyle: { marginLeft: -25 }  // Adjusted to move left
-          }} 
+        <Tabs.Screen
+          name="feed"
+          options={{
+            tabBarLabel: 'Feed',
+            tabBarItemStyle: { marginLeft: -25 }, // Adjusted to move left
+          }}
         />
-        <Tabs.Screen 
-          name="connect" 
-          options={{ 
-            tabBarLabel: "Connect", 
-            tabBarItemStyle: { marginLeft: -45 }  // Adjusted to move left
-          }} 
+        <Tabs.Screen
+          name="connect"
+          options={{
+            tabBarLabel: 'Connect',
+            tabBarItemStyle: { marginLeft: -45 }, // Adjusted to move left
+          }}
         />
-        <Tabs.Screen 
-          name="discover" 
-          options={{ 
-            tabBarLabel: "Discover", 
-            tabBarItemStyle: { marginRight: -45 }  // Adjusted to move right
-          }} 
+        <Tabs.Screen
+          name="discover"
+          options={{
+            tabBarLabel: 'Discover',
+            tabBarItemStyle: { marginRight: -45 }, // Adjusted to move right
+          }}
         />
-        <Tabs.Screen 
-          name="profile" 
-          options={{ 
-            tabBarLabel: "Profile", 
-            tabBarItemStyle: { marginRight: -25 }  // Adjusted to move right
-          }} 
+        <Tabs.Screen
+          name="profile"
+          options={{
+            tabBarLabel: 'Profile',
+            tabBarItemStyle: { marginRight: -25 }, // Adjusted to move right
+          }}
         />
       </Tabs>
       <CustomCenterButton />
@@ -115,7 +138,10 @@ function CustomCenterButton() {
   return (
     <View style={styles.centerButtonContainer}>
       <TouchableOpacity onPress={() => router.push('/upload')}>
-        <Image source={require('../../assets/images/upload.png')} style={styles.centerButtonIcon} />
+        <Image
+          source={require('../../assets/images/upload.png')}
+          style={styles.centerButtonIcon}
+        />
       </TouchableOpacity>
     </View>
   );
@@ -124,7 +150,7 @@ function CustomCenterButton() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: -65,
+    // marginTop: -65,
   },
   tabBarBackground: {
     width: '100%',

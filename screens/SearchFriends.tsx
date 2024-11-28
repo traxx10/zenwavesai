@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Image, StatusBar, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StatusBar,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router'; // Import useRouter for Expo Router navigation
 import BackIcon from '../assets/icons/back.svg'; // Import your back icon
 import SearchIcon from '../assets/icons/search.svg';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 export default function SearchFriendsScreen() {
   const router = useRouter(); // Use useRouter for navigation
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResult, setSearchResult] = useState<{ id?: string; relationship_status?: string; first_name?: string; last_name?: string; avatar_url?: string } | null>(null);
+  const [searchResult, setSearchResult] = useState<{
+    id?: string;
+    relationship_status?: string;
+    first_name?: string;
+    last_name?: string;
+    avatar_url?: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>('');
 
@@ -33,12 +50,12 @@ export default function SearchFriendsScreen() {
     setIsLoading(true);
 
     try {
-      const url = `http://127.0.0.1:8000/search-by-phone/${searchQuery}`;
+      const url = `${BASE_URL}/search-by-phone/${searchQuery}`;
       console.log('Search URL:', url); // 输出 URL 以进行调试
       const response = await axios.get(url);
       setSearchResult(response.data);
     } catch (error) {
-      console.error("Error fetching search result:", error);
+      console.error('Error fetching search result:', error);
       setSearchResult(null);
     }
 
@@ -48,33 +65,37 @@ export default function SearchFriendsScreen() {
   const handleFollow = async () => {
     try {
       if (!searchResult || !currentUserId) return;
-      await axios.post(`http://127.0.0.1:8000/users/${currentUserId}/follow/${searchResult.id}`);
-      setSearchResult(prev => ({
+      await axios.post(
+        `${BASE_URL}/users/${currentUserId}/follow/${searchResult.id}`
+      );
+      setSearchResult((prev) => ({
         ...(prev || { relationship_status: '' }),
-        relationship_status: 'accepted'
+        relationship_status: 'accepted',
       }));
     } catch (error) {
-      console.log("Error following user:", error);
+      console.log('Error following user:', error);
     }
   };
 
   const handleUnfollow = async () => {
     try {
       if (!searchResult || !currentUserId) return;
-      await axios.post(`http://127.0.0.1:8000/users/${currentUserId}/unfollow/${searchResult.id}`);
-      setSearchResult(prev => ({
+      await axios.post(
+        `${BASE_URL}/users/${currentUserId}/unfollow/${searchResult.id}`
+      );
+      setSearchResult((prev) => ({
         ...(prev || { relationship_status: '' }),
-        relationship_status: 'not_following'
+        relationship_status: 'not_following',
       }));
     } catch (error) {
-      console.log("Error unfollowing user:", error);
+      console.log('Error unfollowing user:', error);
     }
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -91,7 +112,7 @@ export default function SearchFriendsScreen() {
           placeholder="Search by phone number"
           placeholderTextColor="#999"
           value={searchQuery}
-          onChangeText={text => setSearchQuery(text)}
+          onChangeText={(text) => setSearchQuery(text)}
           onSubmitEditing={handleSearch}
         />
       </View>
@@ -102,14 +123,25 @@ export default function SearchFriendsScreen() {
       {/* Search Result */}
       {searchResult && (
         <View style={styles.friendContainer}>
-          <Image source={{ uri: searchResult.avatar_url }} style={styles.friendImage} />
-          <Text style={styles.friendName}>{`${searchResult.first_name} ${searchResult.last_name}`}</Text>
+          <Image
+            source={{ uri: searchResult.avatar_url }}
+            style={styles.friendImage}
+          />
+          <Text
+            style={styles.friendName}
+          >{`${searchResult.first_name} ${searchResult.last_name}`}</Text>
           <TouchableOpacity
             style={styles.followButton}
-            onPress={searchResult.relationship_status === 'accepted' ? handleUnfollow : handleFollow}
+            onPress={
+              searchResult.relationship_status === 'accepted'
+                ? handleUnfollow
+                : handleFollow
+            }
           >
             <Text style={styles.followButtonText}>
-              {searchResult.relationship_status === 'accepted' ? 'Unfollow' : 'Follow'}
+              {searchResult.relationship_status === 'accepted'
+                ? 'Unfollow'
+                : 'Follow'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -117,7 +149,9 @@ export default function SearchFriendsScreen() {
 
       {/* No Results */}
       {!isLoading && searchQuery && !searchResult && (
-        <Text style={styles.noResultsText}>No user found with this phone number.</Text>
+        <Text style={styles.noResultsText}>
+          No user found with this phone number.
+        </Text>
       )}
     </View>
   );

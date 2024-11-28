@@ -1832,6 +1832,11 @@
   dependencies:
     web-streams-polyfill "^3.1.1"
 
+"@revenuecat/purchases-typescript-internal@13.9.0":
+  version "13.9.0"
+  resolved "https://registry.yarnpkg.com/@revenuecat/purchases-typescript-internal/-/purchases-typescript-internal-13.9.0.tgz#bd75906dadf7617fb63230a00af4b67010b15bcd"
+  integrity sha512-/46OD9U3U44VekfSjukQ5Ht+OKll35zO/ihSJ+OakYMjnq9sJKSWUCwC/bTHThMvSgMsmnQy2VOXK1ZR7MxC0A==
+
 "@segment/loosely-validate-event@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@segment/loosely-validate-event/-/loosely-validate-event-2.0.0.tgz#87dfc979e5b4e7b82c5f1d8b722dfd5d77644681"
@@ -6500,6 +6505,13 @@ react-native-is-edge-to-edge@^1.1.6:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/react-native-is-edge-to-edge/-/react-native-is-edge-to-edge-1.1.6.tgz#69ec13f70d76e9245e275eed4140d0873a78f902"
   integrity sha512-1pHnFTlBahins6UAajXUqeCOHew9l9C2C8tErnpGC3IyLJzvxD+TpYAixnCbrVS52f7+NvMttbiSI290XfwN0w==
+
+react-native-purchases@^8.2.7:
+  version "8.2.7"
+  resolved "https://registry.yarnpkg.com/react-native-purchases/-/react-native-purchases-8.2.7.tgz#39683c6c7faf9866364bdcb49fdaa20e26d9ebd5"
+  integrity sha512-kdshoP5atDXZLryl3oo2xQ8im+12EUBboE8x48nJTdnExmdmX/OOPuX4KxGfln2skOGW8k8m9juVj+eqrzHN5A==
+  dependencies:
+    "@revenuecat/purchases-typescript-internal" "13.9.0"
 
 react-native-qrcode-svg@^6.3.12:
   version "6.3.12"

@@ -1,20 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft, faFlask } from '@fortawesome/free-solid-svg-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 export default function UploadTextCoverScreen() {
-  const { 
-    category, 
-    title, 
-    prompt, 
-    description, 
-    selectedTags, 
-    duration, 
-    playlistId 
+  const {
+    category,
+    title,
+    prompt,
+    description,
+    selectedTags,
+    duration,
+    playlistId,
   } = useLocalSearchParams();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,9 +47,13 @@ export default function UploadTextCoverScreen() {
   }, []);
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert('Permission required', 'Please allow access to photos to select a cover image.');
+      Alert.alert(
+        'Permission required',
+        'Please allow access to photos to select a cover image.'
+      );
       return;
     }
 
@@ -57,7 +71,7 @@ export default function UploadTextCoverScreen() {
 
   const handleNext = async () => {
     if (!currentUserId) return;
-    
+
     setLoading(true);
     try {
       const formData = new FormData();
@@ -65,8 +79,16 @@ export default function UploadTextCoverScreen() {
       formData.append('title', title as string);
       formData.append('prompt', prompt as string);
       formData.append('description', description?.toString() || '');
-      formData.append('category', Array.isArray(category) ? category[0] : category?.toString() || '');
-      formData.append('functional_tags', Array.isArray(selectedTags) ? selectedTags.join(',') : selectedTags?.toString() || '');
+      formData.append(
+        'category',
+        Array.isArray(category) ? category[0] : category?.toString() || ''
+      );
+      formData.append(
+        'functional_tags',
+        Array.isArray(selectedTags)
+          ? selectedTags.join(',')
+          : selectedTags?.toString() || ''
+      );
       formData.append('duration', duration?.toString() || '');
 
       if (selectedImage) {
@@ -75,21 +97,21 @@ export default function UploadTextCoverScreen() {
         formData.append('cover_image', {
           uri: selectedImage,
           type: 'image/jpeg',
-          name: `cover_${Date.now()}.jpg`
+          name: `cover_${Date.now()}.jpg`,
         } as any);
       }
 
-      const response = await fetch('http://127.0.0.1:8000/generate-music-from-text/', {
+      const response = await fetch(`${BASE_URL}/generate-music-from-text`, {
         method: 'POST',
         body: formData,
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         Alert.alert('Success', 'Music generated successfully!');
         router.push({
           pathname: '/musicedit',
-          params: { 
+          params: {
             draft_list_id: data.data.draft_list_id,
             category,
             title,
@@ -97,8 +119,8 @@ export default function UploadTextCoverScreen() {
             description,
             selectedTags,
             duration,
-            playlistId: playlistId ? playlistId.toString() : ''
-          }
+            playlistId: playlistId ? playlistId.toString() : '',
+          },
         });
       } else {
         const errorData = await response.json();
@@ -123,7 +145,11 @@ export default function UploadTextCoverScreen() {
       <View style={styles.uploadContainer}>
         <TouchableOpacity onPress={pickImage}>
           <Image
-            source={selectedImage ? { uri: selectedImage } : require('../assets/images/cover.png')}
+            source={
+              selectedImage
+                ? { uri: selectedImage }
+                : require('../assets/images/cover.png')
+            }
             style={styles.coverImage}
           />
         </TouchableOpacity>
@@ -134,8 +160,16 @@ export default function UploadTextCoverScreen() {
           <FontAwesomeIcon icon={faFlask} size={20} color="#fff" />
           <Text style={styles.createCoverButtonText}>Create Cover with AI</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext} disabled={loading}>
-          {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.nextButtonText}>Next</Text>}
+        <TouchableOpacity
+          style={styles.nextButton}
+          onPress={handleNext}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#000" />
+          ) : (
+            <Text style={styles.nextButtonText}>Next</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>

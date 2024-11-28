@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>myapp</string>
-          <string>com.zenwaves.ai</string>
+          <string>com.zenwaves.app</string>
         </array>
       </dict>
       <dict>

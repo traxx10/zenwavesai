@@ -1,4 +1,10 @@
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react';
 import {
   View,
   Text,
@@ -12,8 +18,6 @@ import {
   StatusBar,
   Image,
   ImageSourcePropType,
-
-
 } from 'react-native';
 import {
   GestureHandlerRootView,
@@ -29,7 +33,12 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { Audio, AVPlaybackStatus, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av';
+import {
+  Audio,
+  AVPlaybackStatus,
+  InterruptionModeAndroid,
+  InterruptionModeIOS,
+} from 'expo-av';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -51,6 +60,7 @@ import RedoIcon from '../../assets/icons/undo-2.svg';
 import VoiceIcon from '../../assets/icons/Voice.svg';
 import MuteIcon from '../../assets/icons/Mute.svg';
 import AddAudioIcon from '../../assets/icons/addsong.svg';
+import { BASE_URL } from '@/utils/apis';
 
 const { width } = Dimensions.get('window');
 const TRACK_HEIGHT = 60;
@@ -91,10 +101,9 @@ interface Clip {
 interface Track {
   index: number;
   isMuted: boolean;
-  volume: number;  // 添加音量控制
-  solo: boolean;   // 添加独奏功能
+  volume: number; // 添加音量控制
+  solo: boolean; // 添加独奏功能
 }
-
 
 // Helper function to render icons
 function renderIcon(
@@ -103,7 +112,11 @@ function renderIcon(
   color: string
 ) {
   if (typeof icon === 'function') {
-    return React.createElement(icon, { width: size, height: size, fill: color });
+    return React.createElement(icon, {
+      width: size,
+      height: size,
+      fill: color,
+    });
   } else {
     return (
       <Image
@@ -115,95 +128,106 @@ function renderIcon(
 }
 
 // AudioClip component
-const AudioClip = React.memo(({
-  clip,
-  scaleFactorShared,
-  onClipPress,
-  selectedClipId,
-  clips,
-  isMuted,
-  tracks,
-  playheadPosition,
-  setAudioPosition,
-  isCurrentlyPlaying,
-}: {
-  clip: Clip;
-  scaleFactorShared: Animated.SharedValue<number>;
-  onClipPress: (clipId: string, startTime: number) => void;
-  selectedClipId: string | null;
-  clips: Clip[];
-  isMuted: boolean;
-  tracks: Track[];
-  playheadPosition: Animated.SharedValue<number>;
-  setAudioPosition: (time: number) => void;
-  isCurrentlyPlaying: boolean;
-}) => {
-  const clipWidth = useMemo(() => {
-    // 根据时长和像素比例计算宽度
-    return Math.max(MIN_CLIP_WIDTH, clip.length * PIXELS_PER_SECOND);
-  }, [clip.length]);
+const AudioClip = React.memo(
+  ({
+    clip,
+    scaleFactorShared,
+    onClipPress,
+    selectedClipId,
+    clips,
+    isMuted,
+    tracks,
+    playheadPosition,
+    setAudioPosition,
+    isCurrentlyPlaying,
+  }: {
+    clip: Clip;
+    scaleFactorShared: Animated.SharedValue<number>;
+    onClipPress: (clipId: string, startTime: number) => void;
+    selectedClipId: string | null;
+    clips: Clip[];
+    isMuted: boolean;
+    tracks: Track[];
+    playheadPosition: Animated.SharedValue<number>;
+    setAudioPosition: (time: number) => void;
+    isCurrentlyPlaying: boolean;
+  }) => {
+    const clipWidth = useMemo(() => {
+      // 根据时长和像素比例计算宽度
+      return Math.max(MIN_CLIP_WIDTH, clip.length * PIXELS_PER_SECOND);
+    }, [clip.length]);
 
-  // 修改波形生成逻辑
-  const [waveforms] = useState(() => {
-    const count = Math.max(10, Math.floor(clipWidth / 3));
-    return Array(count).fill(0).map(() => ({
-      height: Math.max(10, Math.random() * WAVEFORM_HEIGHT),
-      opacity: 0.6 + Math.random() * 0.4
-    }));
-  });
+    // 修改波形生成逻辑
+    const [waveforms] = useState(() => {
+      const count = Math.max(10, Math.floor(clipWidth / 3));
+      return Array(count)
+        .fill(0)
+        .map(() => ({
+          height: Math.max(10, Math.random() * WAVEFORM_HEIGHT),
+          opacity: 0.6 + Math.random() * 0.4,
+        }));
+    });
 
-  // 创建 Tap 手势
-  const tapGesture = Gesture.Tap()
-    .onEnd(() => {
+    // 创建 Tap 手势
+    const tapGesture = Gesture.Tap().onEnd(() => {
       'worklet';
-      const clipPosition = clip.startTime * scaleFactorShared.value + TRACK_HEADER_WIDTH;
+      const clipPosition =
+        clip.startTime * scaleFactorShared.value + TRACK_HEADER_WIDTH;
       playheadPosition.value = clipPosition;
       runOnJS(setAudioPosition)(clip.startTime);
       runOnJS(onClipPress)(clip.id, clip.startTime);
     });
 
-  const animatedStyle = useAnimatedStyle(() => {
-    // 计算 X 位置，使片段紧接着前一个片段
-    const xPosition = TRACK_HEADER_WIDTH + (clip.startTime * PIXELS_PER_SECOND);
-    
-    return {
-      transform: [
-        { translateX: xPosition },
-        { translateY: clip.trackIndex * TOTAL_TRACK_HEIGHT }
-      ],
-      width: clipWidth,
-      opacity: isMuted ? 0.5 : 1,
-      borderColor: selectedClipId === clip.id ? '#fff' : 'transparent',
-      backgroundColor: isCurrentlyPlaying ? '#666' : '#555',
-    };
-  }, [selectedClipId, isMuted, clipWidth, isCurrentlyPlaying, clip.startTime]);
+    const animatedStyle = useAnimatedStyle(() => {
+      // 计算 X 位置，使片段紧接着前一个片段
+      const xPosition = TRACK_HEADER_WIDTH + clip.startTime * PIXELS_PER_SECOND;
 
-  return (
-    <GestureDetector gesture={tapGesture}>
-      <Animated.View style={[styles.audioClip, animatedStyle]}>
-        <View style={styles.waveformContainer}>
-          {waveforms.map((wave, index) => (
-            <View
-              key={index}
-              style={[
-                styles.waveBar,
-                {
-                  height: isCurrentlyPlaying 
-                    ? wave.height * (1 + Math.sin(Date.now() / 200 + index) * 0.2)
-                    : wave.height,
-                  backgroundColor: `rgba(255, 255, 255, ${wave.opacity})`
-                }
-              ]}
-            />
-          ))}
-        </View>
-        <Text style={styles.clipTitle} numberOfLines={1}>
-          {clip.title}
-        </Text>
-      </Animated.View>
-    </GestureDetector>
-  );
-});
+      return {
+        transform: [
+          { translateX: xPosition },
+          { translateY: clip.trackIndex * TOTAL_TRACK_HEIGHT },
+        ],
+        width: clipWidth,
+        opacity: isMuted ? 0.5 : 1,
+        borderColor: selectedClipId === clip.id ? '#fff' : 'transparent',
+        backgroundColor: isCurrentlyPlaying ? '#666' : '#555',
+      };
+    }, [
+      selectedClipId,
+      isMuted,
+      clipWidth,
+      isCurrentlyPlaying,
+      clip.startTime,
+    ]);
+
+    return (
+      <GestureDetector gesture={tapGesture}>
+        <Animated.View style={[styles.audioClip, animatedStyle]}>
+          <View style={styles.waveformContainer}>
+            {waveforms.map((wave, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.waveBar,
+                  {
+                    height: isCurrentlyPlaying
+                      ? wave.height *
+                        (1 + Math.sin(Date.now() / 200 + index) * 0.2)
+                      : wave.height,
+                    backgroundColor: `rgba(255, 255, 255, ${wave.opacity})`,
+                  },
+                ]}
+              />
+            ))}
+          </View>
+          <Text style={styles.clipTitle} numberOfLines={1}>
+            {clip.title}
+          </Text>
+        </Animated.View>
+      </GestureDetector>
+    );
+  }
+);
 
 // ControlButton component
 const ControlButton = ({
@@ -233,9 +257,7 @@ const calculateInitialScale = (totalDuration: number): number => {
   return Math.min(Math.max(suggestedScale, MIN_SCALE), DEFAULT_SCALE);
 };
 
-const API_URL = 'http://127.0.0.1:8000'; // 或者您的实际 API 地址
-
-
+const API_URL = BASE_URL; // 或者您的实际 API 地址
 
 // 添接口定义
 interface MusicLibrary {
@@ -260,10 +282,8 @@ interface DraftListResponse {
     draft_list_id: string;
     user_id: string;
     drafts: Draft[];
-  }
+  };
 }
-
-
 
 type NavigationProps = {
   library: { draft_list_id: string };
@@ -316,12 +336,12 @@ type MusicEditParams = {
   playlistId?: string;
   returnScreen?: string;
   playlist?: string;
-} & Record<string, string | string[]>;  // 添加 Record 类型以满足 Routes 约束
+} & Record<string, string | string[]>; // 添加 Record 类型以满足 Routes 约束
 
 export default function MusicEditScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<MusicEditParams>();
-  
+
   useEffect(() => {
     console.log('🟢 MusicEdit页面接收到的参数:', {
       draft_list_id: params.draft_list_id,
@@ -332,12 +352,12 @@ export default function MusicEditScreen() {
       selectedTags: params.selectedTags,
       duration: params.duration,
       playlistId: params.playlistId,
-      raw: params
+      raw: params,
     });
   }, [params]);
 
   const isFirstRender = useRef(true);
-  
+
   useEffect(() => {
     if (isFirstRender.current) {
       // 安全地解析 playlist 字符串
@@ -354,13 +374,11 @@ export default function MusicEditScreen() {
         draft_list_id: params.draft_list_id,
         returnScreen: params.returnScreen,
         playlist: parsedPlaylist,
-        raw: params
+        raw: params,
       });
       isFirstRender.current = false;
     }
   }, [params]);
-
-
 
   const draft_list_id = params.draft_list_id;
   const [userId, setUserId] = useState<string | null>(null);
@@ -373,24 +391,32 @@ export default function MusicEditScreen() {
   const [currentTime, setCurrentTime] = useState(0);
 
   // 添加缺失的状态
-  const [tracks, setTracks] = useState<Track[]>([{ index: 0, isMuted: false, volume: 1, solo: false }]);
+  const [tracks, setTracks] = useState<Track[]>([
+    { index: 0, isMuted: false, volume: 1, solo: false },
+  ]);
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
   const [audioLoaded, setAudioLoaded] = useState(false);
   const [playbackPosition, setPlaybackPosition] = useState(0);
-  
+
   // 添加缺失的共享值
   const scaleFactorShared = useSharedValue(DEFAULT_SCALE);
   const playheadPosition = useSharedValue(TRACK_HEADER_WIDTH);
-  
+
   // 添加缺失的引用
   const trackScrollViewRef = useRef<ScrollView>(null);
-  
+
   // 计算总宽度
   const totalWidth = useMemo(() => {
-    const maxEndTime = clips.reduce((max, clip) => 
-      Math.max(max, clip.startTime + clip.length), 0);
-    return Math.max(width, maxEndTime * scaleFactorShared.value) + TRACK_HEADER_WIDTH + 100;
+    const maxEndTime = clips.reduce(
+      (max, clip) => Math.max(max, clip.startTime + clip.length),
+      0
+    );
+    return (
+      Math.max(width, maxEndTime * scaleFactorShared.value) +
+      TRACK_HEADER_WIDTH +
+      100
+    );
   }, [clips, scaleFactorShared.value]);
 
   // 解析播放列表数据
@@ -416,11 +442,11 @@ export default function MusicEditScreen() {
   const handleAddAudio = useCallback(() => {
     router.push({
       pathname: '/library',
-      params: { 
+      params: {
         draft_list_id,
         returnScreen: 'musicedit',
-        playlist: JSON.stringify(playlistData)
-      }
+        playlist: JSON.stringify(playlistData),
+      },
     });
   }, [draft_list_id, playlistData]);
 
@@ -428,46 +454,52 @@ export default function MusicEditScreen() {
   const handleDraftsPress = () => {
     router.push({
       pathname: '/drafts',
-      params: { 
+      params: {
         returnScreen: 'musicedit',
-        draft_list_id 
-      }
+        draft_list_id,
+      },
     });
   };
 
   const addTrack = useCallback(() => {
-    setTracks(prev => [
+    setTracks((prev) => [
       ...prev,
       {
         index: prev.length,
         isMuted: false,
         volume: 1,
-        solo: false
-      }
+        solo: false,
+      },
     ]);
   }, []);
 
-  const onTrackScrollWithOffset = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // 处理滚动事件
-    console.log('滚动位置:', event.nativeEvent.contentOffset);
-  }, []);
+  const onTrackScrollWithOffset = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      // 处理滚动事件
+      console.log('滚动位置:', event.nativeEvent.contentOffset);
+    },
+    []
+  );
 
   // 更新音频位置的函数
-  const setAudioPosition = useCallback((time: number) => {
-    if (sound) {
-      // 找到当前播放的片段
-      const currentClip = clips[currentAudioIndex];
-      if (currentClip) {
-        // 计算相对于当前片段的时间
-        const clipRelativeTime = time - currentClip.startTime;
-        // 保时间在当前片段范围内
-        if (clipRelativeTime >= 0 && clipRelativeTime <= currentClip.length) {
-          sound.setPositionAsync(clipRelativeTime * 1000);
-          setCurrentTime(time);
+  const setAudioPosition = useCallback(
+    (time: number) => {
+      if (sound) {
+        // 找到当前播放的片段
+        const currentClip = clips[currentAudioIndex];
+        if (currentClip) {
+          // 计算相对于当前片段的时间
+          const clipRelativeTime = time - currentClip.startTime;
+          // 保时间在当前片段范围内
+          if (clipRelativeTime >= 0 && clipRelativeTime <= currentClip.length) {
+            sound.setPositionAsync(clipRelativeTime * 1000);
+            setCurrentTime(time);
+          }
         }
       }
-    }
-  }, [sound, clips, currentAudioIndex]);
+    },
+    [sound, clips, currentAudioIndex]
+  );
 
   // 初始化音频模块
   useEffect(() => {
@@ -498,50 +530,72 @@ export default function MusicEditScreen() {
       if (!userId || !draft_list_id) return;
       try {
         setIsLoading(true);
-        const response = await fetch(`${API_URL}/draft-list/${draft_list_id}/${userId}`);
+        const response = await fetch(
+          `${API_URL}/draft-list/${draft_list_id}/${userId}`
+        );
         const data = await response.json();
-        
+
         if (data.status === 'success') {
           // 获取第一个 order 为 1 的草稿的封面图片
-          const firstDraft = data.data.drafts.find((draft: Draft) => draft.order === 1);
+          const firstDraft = data.data.drafts.find(
+            (draft: Draft) => draft.order === 1
+          );
           const coverUrl = firstDraft?.music_library.cover_url;
 
           // 计算每个片段的起始时间和长度
-          const newClips = data.data.drafts.map((draft: Draft, index: number) => {
-            const clipDuration = Math.min(draft.music_library.duration, MAX_CLIP_DURATION);
-            const previousClipsDuration = index > 0 
-              ? data.data.drafts
-                  .slice(0, index)
-                  .reduce((sum: number, prev: Draft) => 
-                    sum + Math.min(prev.music_library.duration, MAX_CLIP_DURATION), 0)
-              : 0;
+          const newClips = data.data.drafts.map(
+            (draft: Draft, index: number) => {
+              const clipDuration = Math.min(
+                draft.music_library.duration,
+                MAX_CLIP_DURATION
+              );
+              const previousClipsDuration =
+                index > 0
+                  ? data.data.drafts
+                      .slice(0, index)
+                      .reduce(
+                        (sum: number, prev: Draft) =>
+                          sum +
+                          Math.min(
+                            prev.music_library.duration,
+                            MAX_CLIP_DURATION
+                          ),
+                        0
+                      )
+                  : 0;
 
-            return {
-              id: draft.draft_id,
-              title: draft.music_library.title,
-              length: clipDuration,
-              startTime: previousClipsDuration,
-              trackIndex: index,
-              output_url: draft.music_library.output_url,
-              volume: 1,
-              fadeIn: 0,
-              fadeOut: 0
-            };
-          });
-          
+              return {
+                id: draft.draft_id,
+                title: draft.music_library.title,
+                length: clipDuration,
+                startTime: previousClipsDuration,
+                trackIndex: index,
+                output_url: draft.music_library.output_url,
+                volume: 1,
+                fadeIn: 0,
+                fadeOut: 0,
+              };
+            }
+          );
+
           setClips(newClips);
-          setTracks(newClips.map((_: Clip, index: number) => ({
-            index,
-            isMuted: false,
-            volume: 1,
-            solo: false
-          })));
-          
-          const totalDuration = newClips.reduce((sum: number, clip: Clip) => sum + clip.length, 0);
+          setTracks(
+            newClips.map((_: Clip, index: number) => ({
+              index,
+              isMuted: false,
+              volume: 1,
+              solo: false,
+            }))
+          );
+
+          const totalDuration = newClips.reduce(
+            (sum: number, clip: Clip) => sum + clip.length,
+            0
+          );
           setDraftData({
             ...data.data,
             duration: totalDuration,
-            cover_url: coverUrl // 设置封面图片 URL
+            cover_url: coverUrl, // 设置封面图片 URL
           });
         }
       } catch (error) {
@@ -555,68 +609,72 @@ export default function MusicEditScreen() {
   }, [draft_list_id, userId]);
 
   // 修改音频播放���辑
-  const loadAndPlayAudio = useCallback(async (clip: Clip, index: number) => {
-    if (!clip.output_url) return;
-    try {
-      // 先停止并卸载当前音频
-      if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
-        setSound(null);
-      }
-      
-      // 创建新的音频实例
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: clip.output_url },
-        { 
-          shouldPlay: true,
-          positionMillis: 0,
-          progressUpdateIntervalMillis: 50
-        },
-        (status) => {
-          if (!status.isLoaded) return;
-          
-          // 更准确地计算当前播放时间
-          const currentPositionInSeconds = Math.floor(status.positionMillis / 1000);
-          const totalPreviousTime = clip.startTime;
-          setCurrentTime(totalPreviousTime + currentPositionInSeconds);
-          
-          // 处理播放完成
-          if (status.didJustFinish) {
-            const nextIndex = index + 1;
-            if (nextIndex < clips.length) {
-              loadAndPlayAudio(clips[nextIndex], nextIndex);
-            } else {
-              // 播放完成后重置所有状态
-              setIsPlaying(false);
-              setCurrentTime(draftData?.duration || 0);
-              setCurrentAudioIndex(0);
-              setSound(null);
+  const loadAndPlayAudio = useCallback(
+    async (clip: Clip, index: number) => {
+      if (!clip.output_url) return;
+      try {
+        // 先停止并卸载当前音频
+        if (sound) {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+          setSound(null);
+        }
+
+        // 创建新的音频实例
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          { uri: clip.output_url },
+          {
+            shouldPlay: true,
+            positionMillis: 0,
+            progressUpdateIntervalMillis: 50,
+          },
+          (status) => {
+            if (!status.isLoaded) return;
+
+            // 更准确地计算当前播放时间
+            const currentPositionInSeconds = Math.floor(
+              status.positionMillis / 1000
+            );
+            const totalPreviousTime = clip.startTime;
+            setCurrentTime(totalPreviousTime + currentPositionInSeconds);
+
+            // 处理播放完成
+            if (status.didJustFinish) {
+              const nextIndex = index + 1;
+              if (nextIndex < clips.length) {
+                loadAndPlayAudio(clips[nextIndex], nextIndex);
+              } else {
+                // 播放完成后重置所有状态
+                setIsPlaying(false);
+                setCurrentTime(draftData?.duration || 0);
+                setCurrentAudioIndex(0);
+                setSound(null);
+              }
             }
           }
-        }
-      );
-      
-      await newSound.setVolumeAsync(1.0);
-      setSound(newSound);
-      setIsPlaying(true);
-      setCurrentAudioIndex(index);
-      setCurrentTime(clip.startTime);
-      
-    } catch (error) {
-      console.error('加载音频失:', error);
-      setSound(null);
-      setIsPlaying(false);
-      setCurrentAudioIndex(0);
-      Alert.alert('错误', '加载音频失败');
-    }
-  }, [clips, draftData?.duration]);
+        );
+
+        await newSound.setVolumeAsync(1.0);
+        setSound(newSound);
+        setIsPlaying(true);
+        setCurrentAudioIndex(index);
+        setCurrentTime(clip.startTime);
+      } catch (error) {
+        console.error('加载音频失:', error);
+        setSound(null);
+        setIsPlaying(false);
+        setCurrentAudioIndex(0);
+        Alert.alert('错误', '加载音频失败');
+      }
+    },
+    [clips, draftData?.duration]
+  );
 
   // 修改播放/暂停处理函数
   const handlePlayPause = useCallback(async () => {
     try {
       if (sound) {
-        const status = await sound.getStatusAsync() as PlaybackStatus;
+        const status = (await sound.getStatusAsync()) as PlaybackStatus;
         if (status.isLoaded) {
           if (status.isPlaying) {
             await sound.pauseAsync();
@@ -634,9 +692,10 @@ export default function MusicEditScreen() {
           await loadAndPlayAudio(clips[0], 0);
         } else {
           // 从当前时间对应的片段开始播放
-          const clipIndex = clips.findIndex(clip => 
-            currentTime >= clip.startTime && 
-            currentTime < (clip.startTime + clip.length)
+          const clipIndex = clips.findIndex(
+            (clip) =>
+              currentTime >= clip.startTime &&
+              currentTime < clip.startTime + clip.length
           );
           const startIndex = clipIndex >= 0 ? clipIndex : 0;
           await loadAndPlayAudio(clips[startIndex], startIndex);
@@ -677,14 +736,17 @@ export default function MusicEditScreen() {
   };
 
   // 修改点击片段时的处理
-  const onClipPress = useCallback((clipId: string, startTime: number) => {
-    setSelectedClipId(clipId);
-    setCurrentTime(startTime);
-    const index = clips.findIndex(c => c.id === clipId);
-    if (index !== -1) {
-      loadAndPlayAudio(clips[index], index);
-    }
-  }, [clips, loadAndPlayAudio]);
+  const onClipPress = useCallback(
+    (clipId: string, startTime: number) => {
+      setSelectedClipId(clipId);
+      setCurrentTime(startTime);
+      const index = clips.findIndex((c) => c.id === clipId);
+      if (index !== -1) {
+        loadAndPlayAudio(clips[index], index);
+      }
+    },
+    [clips, loadAndPlayAudio]
+  );
 
   // 修改 handleExport 函数
   const handleExport = useCallback(async () => {
@@ -720,44 +782,42 @@ export default function MusicEditScreen() {
           title: draftData.title || '',
           cover_url: draftData.cover_url || '',
           description: draftData.description || '',
-          playlist: params.playlist || '',  // 保持 playlist 参数
-          playlistId: params.playlistId || ''  // 保持 playlistId 参数
-        }
+          playlist: params.playlist || '', // 保持 playlist 参数
+          playlistId: params.playlistId || '', // 保持 playlistId 参数
+        },
       });
-
     } catch (error) {
       console.error('处理发布失败:', error);
-      Alert.alert(
-        '错误',
-        '添加到播放列表失败，是否继续发布？',
-        [
-          {
-            text: '取消',
-            style: 'cancel'
+      Alert.alert('错误', '添加到播放列表失败，是否继续发布？', [
+        {
+          text: '取消',
+          style: 'cancel',
+        },
+        {
+          text: '继续发布',
+          onPress: () => {
+            const nextPageParams = {
+              userId,
+              draft_list_id,
+              title: draftData.title,
+              cover_url: draftData.cover_url,
+              description: draftData.description || '',
+              playlist: playlistData ? JSON.stringify(playlistData) : '',
+            };
+
+            // 添加传递参数的日志
+            console.log(
+              '🔵 MusicEdit页面传递到下一页的参数(错误处理):',
+              nextPageParams
+            );
+
+            router.push({
+              pathname: '/publish',
+              params: nextPageParams,
+            });
           },
-          {
-            text: '继续发布',
-            onPress: () => {
-              const nextPageParams = {
-                userId,
-                draft_list_id,
-                title: draftData.title,
-                cover_url: draftData.cover_url,
-                description: draftData.description || '',
-                playlist: playlistData ? JSON.stringify(playlistData) : ''
-              };
-
-              // 添加传递参数的日志
-              console.log('🔵 MusicEdit页面传递到下一页的参数(错误处理):', nextPageParams);
-
-              router.push({
-                pathname: '/publish',
-                params: nextPageParams
-              });
-            }
-          }
-        ]
-      );
+        },
+      ]);
     }
   }, [userId, draft_list_id, draftData, playlistData, router, params]);
 
@@ -821,23 +881,27 @@ export default function MusicEditScreen() {
             <View style={styles.playControl}>
               <TouchableOpacity onPress={handlePlayPause}>
                 {isPlaying ? (
-                  <Image source={PauseIcon} style={{ width: 30, height: 30, tintColor: '#fff' }} />
-      ) : (
-        <PlayIcon width={30} height={30} fill="#fff" />
-      )}
-    </TouchableOpacity>
+                  <Image
+                    source={PauseIcon}
+                    style={{ width: 30, height: 30, tintColor: '#fff' }}
+                  />
+                ) : (
+                  <PlayIcon width={30} height={30} fill="#fff" />
+                )}
+              </TouchableOpacity>
             </View>
 
             {/* Time Display with Undo and Redo */}
             <View style={styles.timeContainer}>
               <Text style={styles.timeText}>
-                {formatTime(currentTime)} / {formatTime(draftData?.duration || 0)}
+                {formatTime(currentTime)} /{' '}
+                {formatTime(draftData?.duration || 0)}
               </Text>
               <View style={styles.timeIcons}>
-                <TouchableOpacity onPress={() => { }}>
+                <TouchableOpacity onPress={() => {}}>
                   {renderIcon(UndoIcon, 24, '#fff')}
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => { }} style={{ marginLeft: 10 }}>
+                <TouchableOpacity onPress={() => {}} style={{ marginLeft: 10 }}>
                   {renderIcon(RedoIcon, 24, '#fff')}
                 </TouchableOpacity>
               </View>
@@ -845,23 +909,24 @@ export default function MusicEditScreen() {
 
             {/* Main Content */}
             <View style={{ flex: 1, position: 'relative' }}>
-
-              <ScrollView
-                style={styles.trackScrollView}
-
-                bounces={false}
-
-              >
+              <ScrollView style={styles.trackScrollView} bounces={false}>
                 <View style={styles.trackContainerWrapper}>
                   {/* 静音按钮器 */}
                   <View style={styles.muteButtonContainer}>
                     {tracks.map((track) => (
                       <TouchableOpacity
                         key={track.index}
-                        style={[styles.muteButton, { top: track.index * TOTAL_TRACK_HEIGHT }]}
+                        style={[
+                          styles.muteButton,
+                          { top: track.index * TOTAL_TRACK_HEIGHT },
+                        ]}
                         onPress={() => toggleMuteTrack(track.index)}
                       >
-                        {renderIcon(track.isMuted ? MuteIcon : VoiceIcon, 24, '#fff')}
+                        {renderIcon(
+                          track.isMuted ? MuteIcon : VoiceIcon,
+                          24,
+                          '#fff'
+                        )}
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -878,7 +943,6 @@ export default function MusicEditScreen() {
                     onScroll={onTrackScrollWithOffset}
                     scrollEventThrottle={16}
                     bounces={false}
-
                     scrollEnabled={true}
                     directionalLockEnabled={true}
                     nestedScrollEnabled={true}
@@ -903,14 +967,14 @@ export default function MusicEditScreen() {
                         tracks={tracks}
                         playheadPosition={playheadPosition}
                         setAudioPosition={setAudioPosition}
-                        isCurrentlyPlaying={currentAudioIndex === clips.indexOf(clip) && isPlaying}
+                        isCurrentlyPlaying={
+                          currentAudioIndex === clips.indexOf(clip) && isPlaying
+                        }
                       />
                     ))}
                   </ScrollView>
                 </View>
               </ScrollView>
-
-
             </View>
           </View>
         </ScrollView>
@@ -929,20 +993,16 @@ export default function MusicEditScreen() {
             onPress={handleAddAudio}
           />
           <ControlButton icon={AddTrackIcon} label="Track" onPress={addTrack} />
-          <ControlButton icon={SplitIcon} label="Split" onPress={() => { }} />
-          <ControlButton icon={CopyIcon} label="Copy" onPress={() => { }} />
-          <ControlButton
-            icon={DeleteIcon}
-            label="Delete"
-            onPress={() => { }}
-          />
-          <ControlButton icon={FadeIcon} label="Fade" onPress={() => { }} />
-          <ControlButton icon={VolumeIcon} label="Volume" onPress={() => { }} />
-          <ControlButton icon={SpeedIcon} label="Speed" onPress={() => { }} />
+          <ControlButton icon={SplitIcon} label="Split" onPress={() => {}} />
+          <ControlButton icon={CopyIcon} label="Copy" onPress={() => {}} />
+          <ControlButton icon={DeleteIcon} label="Delete" onPress={() => {}} />
+          <ControlButton icon={FadeIcon} label="Fade" onPress={() => {}} />
+          <ControlButton icon={VolumeIcon} label="Volume" onPress={() => {}} />
+          <ControlButton icon={SpeedIcon} label="Speed" onPress={() => {}} />
           <ControlButton
             icon={NoiseReductionIcon}
             label="Noise Reduction"
-            onPress={() => { }}
+            onPress={() => {}}
           />
         </ScrollView>
       </View>
@@ -963,7 +1023,7 @@ export default function MusicEditScreen() {
       )}
     </GestureHandlerRootView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -1093,7 +1153,6 @@ const styles = StyleSheet.create({
   markerContainer: {
     position: 'relative',
     height: '100%',
-
   },
   marker: {
     position: 'absolute',

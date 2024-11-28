@@ -12,6 +12,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import BackIcon from '../../assets/icons/back.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 const GoogleInviteCodeScreen = () => {
   const router = useRouter();
@@ -19,15 +20,19 @@ const GoogleInviteCodeScreen = () => {
   const [inviteCode, setInviteCode] = useState('');
   const [referrerName, setReferrerName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const googleData = params.googleData ? JSON.parse(params.googleData as string) : null;
+  const googleData = params.googleData
+    ? JSON.parse(params.googleData as string)
+    : null;
 
-  const completeGoogleRegistration = async (skipInviteCode: boolean = false) => {
+  const completeGoogleRegistration = async (
+    skipInviteCode: boolean = false
+  ) => {
     try {
       setIsLoading(true);
-      
+
       // If there is an invitation code and it's not a skip mode, verify the invitation code
       if (inviteCode && !skipInviteCode) {
-        const validateResponse = await fetch('http://127.0.0.1:8000/auth/pre-register', {
+        const validateResponse = await fetch(`${BASE_URL}/auth/pre-register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -40,7 +45,7 @@ const GoogleInviteCodeScreen = () => {
           Alert.alert('Invalid Code', 'Please enter a valid invitation code');
           return;
         }
-        
+
         if (validateData.status === 'valid_code') {
           setReferrerName(validateData.data.referrer_name);
         }
@@ -53,19 +58,22 @@ const GoogleInviteCodeScreen = () => {
         email: googleData.user.email,
         id_token: googleData.idToken,
         avatar_url: googleData.user.photo || '',
-        invite_code: skipInviteCode ? undefined : inviteCode
+        invite_code: skipInviteCode ? undefined : inviteCode,
       };
 
-      const response = await fetch('http://127.0.0.1:8000/users/complete-google-register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
+      const response = await fetch(
+        `${BASE_URL}/users/complete-google-register`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (data.status === 'success') {
         await AsyncStorage.clear();
         await AsyncStorage.setItem('userId', data.data.user_id);
@@ -84,7 +92,7 @@ const GoogleInviteCodeScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF" />
-      
+
       <View style={styles.header}>
         <TouchableOpacity style={styles.backIcon} onPress={() => router.back()}>
           <BackIcon width={24} height={24} />
@@ -93,7 +101,8 @@ const GoogleInviteCodeScreen = () => {
       </View>
 
       <Text style={styles.description}>
-        Please enter your friend's invitation code to unlock exclusive features and benefits.
+        Please enter your friend's invitation code to unlock exclusive features
+        and benefits.
       </Text>
 
       <Text style={styles.label}>Invite Code</Text>
@@ -105,7 +114,7 @@ const GoogleInviteCodeScreen = () => {
         onChangeText={setInviteCode}
         editable={!isLoading}
       />
-      
+
       {referrerName && (
         <Text style={styles.referrerText}>Referrer: {referrerName}</Text>
       )}
@@ -114,14 +123,14 @@ const GoogleInviteCodeScreen = () => {
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <>
-          <TouchableOpacity 
-            style={styles.confirmButton} 
+          <TouchableOpacity
+            style={styles.confirmButton}
             onPress={() => completeGoogleRegistration(false)}
           >
             <Text style={styles.confirmButtonText}>Confirm</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.skipButton} 
+          <TouchableOpacity
+            style={styles.skipButton}
             onPress={() => completeGoogleRegistration(true)}
           >
             <Text style={styles.skipButtonText}>Skip</Text>

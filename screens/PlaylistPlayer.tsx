@@ -27,6 +27,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Audio } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RocketIcon from '../assets/icons/Rocket.svg';
+import { BASE_URL } from '@/utils/apis';
 
 interface MusicDetails {
   id: string;
@@ -77,7 +78,9 @@ export default function PlaylistPlayerScreen() {
   useEffect(() => {
     const fetchPlaylistDetails = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/playlist-details/${playlistId}`);
+        const response = await fetch(
+          `${BASE_URL}/playlist-details/${playlistId}`
+        );
         const data = await response.json();
         setPlaylist(data);
 
@@ -118,7 +121,7 @@ export default function PlaylistPlayerScreen() {
     const checkFavoriteStatus = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/check-favorite/${musicDetails?.id}?user_id=${currentUserId}`
+          `${BASE_URL}/check-favorite/${musicDetails?.id}?user_id=${currentUserId}`
         );
         const data = await response.json();
         if (data.status === 'success') {
@@ -149,12 +152,15 @@ export default function PlaylistPlayerScreen() {
     try {
       console.log('Attempting to increment play count for music:', musicId);
 
-      const response = await fetch(`http://127.0.0.1:8000/increment-play-count/${musicId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${BASE_URL}/increment-play-count/${musicId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -218,7 +224,8 @@ export default function PlaylistPlayerScreen() {
   }, [sound]);
 
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 10,
+    onMoveShouldSetPanResponder: (_, gestureState) =>
+      Math.abs(gestureState.dx) > 10,
     onPanResponderRelease: (_, gestureState) => {
       if (gestureState.dx < 0) {
         // Swipe left to hide GIF
@@ -272,7 +279,7 @@ export default function PlaylistPlayerScreen() {
   const toggleFavorite = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/toggle-favorite/${musicDetails?.id}?user_id=${currentUserId}`,
+        `${BASE_URL}/toggle-favorite/${musicDetails?.id}?user_id=${currentUserId}`,
         {
           method: 'POST',
         }
@@ -343,7 +350,10 @@ export default function PlaylistPlayerScreen() {
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" style="light" />
       <Animated.View {...coverResponder.panHandlers}>
-        <Image source={{ uri: musicDetails?.cover_url }} style={styles.topImage} />
+        <Image
+          source={{ uri: musicDetails?.cover_url }}
+          style={styles.topImage}
+        />
       </Animated.View>
 
       {showGif && (
@@ -384,7 +394,10 @@ export default function PlaylistPlayerScreen() {
             style={styles.gradient}
           >
             {isOwner && (
-              <TouchableOpacity style={styles.rocketContainer} onPress={handleRocketPress}>
+              <TouchableOpacity
+                style={styles.rocketContainer}
+                onPress={handleRocketPress}
+              >
                 <RocketIcon width={24} height={24} fill="#FFF" />
               </TouchableOpacity>
             )}
@@ -392,7 +405,9 @@ export default function PlaylistPlayerScreen() {
               <Text style={styles.songTitle}>{musicDetails?.title}</Text>
 
               <ScrollView ref={scrollRef} style={styles.descriptionContainer}>
-                <Text style={styles.description}>{musicDetails?.description}</Text>
+                <Text style={styles.description}>
+                  {musicDetails?.description}
+                </Text>
               </ScrollView>
 
               <Slider
@@ -408,7 +423,9 @@ export default function PlaylistPlayerScreen() {
 
               <View style={styles.timeContainer}>
                 <Text style={styles.time}>{formatTime(position)}</Text>
-                <Text style={styles.time}>- {formatTime(duration - position)}</Text>
+                <Text style={styles.time}>
+                  - {formatTime(duration - position)}
+                </Text>
               </View>
 
               <View style={styles.controls}>

@@ -15,6 +15,7 @@ import SearchIcon from '../assets/icons/search.svg';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from 'expo-router';
 import ShuffleIcon from '../assets/icons/Shuffle.svg';
+import { BASE_URL } from '@/utils/apis';
 
 // 添加类型定义
 interface PlaylistTrack {
@@ -54,7 +55,9 @@ const MusicPlaylistScreen = () => {
   const handleSearch = async (query: string) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/playlists/${playlistId}/search?query=${encodeURIComponent(query)}`
+        `${BASE_URL}/playlists/${playlistId}/search?query=${encodeURIComponent(
+          query
+        )}`
       );
       const data = await response.json();
       if (data.status === 'success') {
@@ -68,9 +71,9 @@ const MusicPlaylistScreen = () => {
   const handleShufflePress = () => {
     router.push({
       pathname: '/playlistplayer',
-      params: { 
+      params: {
         playlistId: playlistId,
-        shuffle: 'true'
+        shuffle: 'true',
       },
     });
   };
@@ -79,11 +82,11 @@ const MusicPlaylistScreen = () => {
     const handleNavigation = () => {
       router.push({
         pathname: '/musicplayer',
-        params: { 
+        params: {
           id: item.id,
           title: item.title,
           coverUrl: item.cover_url,
-          creatorName: item.creator_name
+          creatorName: item.creator_name,
         },
       });
     };
@@ -142,9 +145,9 @@ const MusicPlaylistScreen = () => {
 
   const fetchPlaylistData = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/playlists/${playlistId}`);
+      const response = await fetch(`${BASE_URL}/playlists/${playlistId}`);
       const data = await response.json();
-      
+
       if (data.status === 'success') {
         setPlaylistData(data.data.playlist);
         setSongs(data.data.playlist.tracks);
@@ -162,7 +165,11 @@ const MusicPlaylistScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content"
+      />
 
       {playlistData && (
         <>
@@ -199,7 +206,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     width: '100%',
-    
+
     aspectRatio: 1,
     resizeMode: 'cover',
   },

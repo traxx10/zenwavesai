@@ -1,18 +1,48 @@
 // ContactsScreen.js
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, StatusBar, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StatusBar,
+  ScrollView,
+} from 'react-native';
 import { useRouter } from 'expo-router'; // Use useRouter for navigation
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import BackIcon from '../assets/icons/back.svg'; // Import custom back icon
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 const contactsOptions = [
-  { id: '1', icon: require('../assets/images/chat-icon.png'), title: 'Chat with contacts', subtitle: 'Find and chat with them' },
-  { id: '2', icon: require('../assets/images/qr-icon.png'), title: 'Scan the QR code', subtitle: 'Scan to add nearby friends instantly' },
-  { id: '3', icon: require('../assets/images/follower-icon.png'), title: 'New followers', subtitle: 'Aubss started following you' },
-  { id: '4', icon: require('../assets/images/activity-icon.png'), title: 'Activity', subtitle: 'Patrica Jackson, sergiorlandosanc' },
+  {
+    id: '1',
+    icon: require('../assets/images/chat-icon.png'),
+    title: 'Chat with contacts',
+    subtitle: 'Find and chat with them',
+  },
+  {
+    id: '2',
+    icon: require('../assets/images/qr-icon.png'),
+    title: 'Scan the QR code',
+    subtitle: 'Scan to add nearby friends instantly',
+  },
+  {
+    id: '3',
+    icon: require('../assets/images/follower-icon.png'),
+    title: 'New followers',
+    subtitle: 'Aubss started following you',
+  },
+  {
+    id: '4',
+    icon: require('../assets/images/activity-icon.png'),
+    title: 'Activity',
+    subtitle: 'Patrica Jackson, sergiorlandosanc',
+  },
 ];
 
 interface MutualFollower {
@@ -45,14 +75,14 @@ export default function ContactsScreen() {
   useEffect(() => {
     if (!currentUserId) return;
 
-    fetch(`http://127.0.0.1:8000/users/${currentUserId}/mutual-followers`)
-      .then(response => response.json())
-      .then(data => {
+    fetch(`${BASE_URL}/users/${currentUserId}/mutual-followers`)
+      .then((response) => response.json())
+      .then((data) => {
         if (data.status === 'success') {
           setMutualFollowers(data.mutual_followers);
         }
       })
-      .catch(error => console.log('Error fetching mutual followers:', error));
+      .catch((error) => console.log('Error fetching mutual followers:', error));
   }, [currentUserId]);
 
   const renderContactOption = ({ item }: { item: any }) => (
@@ -83,7 +113,9 @@ export default function ContactsScreen() {
     >
       <Image source={{ uri: item.avatar_url }} style={styles.followerImage} />
       <View style={styles.followerTextContainer}>
-        <Text style={styles.followerName}>{`${item.first_name} ${item.last_name}`}</Text>
+        <Text
+          style={styles.followerName}
+        >{`${item.first_name} ${item.last_name}`}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -99,11 +131,11 @@ export default function ContactsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <BackIcon width={24} height={24} fill="#000" /> 
+          <BackIcon width={24} height={24} fill="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Contacts</Text>
         <TouchableOpacity>
-          <FontAwesomeIcon icon={faSearch} size={26} color="#000" /> 
+          <FontAwesomeIcon icon={faSearch} size={26} color="#000" />
         </TouchableOpacity>
       </View>
 

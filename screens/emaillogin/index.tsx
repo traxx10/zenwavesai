@@ -17,6 +17,7 @@ import ArrowBackIcon from '@/assets/icons/back.svg';
 import { TopSpace } from '@/components/TopSpace';
 import { style } from './styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 export const EmailLogin = () => {
   const router = useRouter();
@@ -47,7 +48,7 @@ export const EmailLogin = () => {
     try {
       console.log(`Sending email: ${email}`);
       const formattedEmail = encodeURIComponent(email.trim());
-      const url = `http://127.0.0.1:8000/check_email?email=${formattedEmail}`;
+      const url = `${BASE_URL}/check_email?email=${formattedEmail}`;
       console.log(`Constructed URL: ${url}`);
 
       // Send the request to the FastAPI server
@@ -117,9 +118,7 @@ export const EmailLogin = () => {
           </View>
 
           <View>
-            {loading && (
-              <ActivityIndicator size="large" color={'#000000'} />
-            )}
+            {loading && <ActivityIndicator size="large" color={'#000000'} />}
             <TouchableOpacity
               style={{
                 width: '100%',
@@ -131,7 +130,9 @@ export const EmailLogin = () => {
               activeOpacity={0.8}
               onPress={!loading ? handleContinue : () => {}}
             >
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>Continue</Text>
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                Continue
+              </Text>
             </TouchableOpacity>
             <TopSpace top={30} />
           </View>

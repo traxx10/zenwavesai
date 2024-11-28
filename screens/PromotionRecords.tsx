@@ -11,6 +11,7 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackIcon from '../assets/icons/back.svg';
+import { BASE_URL } from '@/utils/apis';
 
 interface PromotionRecord {
   id: string;
@@ -40,13 +41,16 @@ const PromotionRecordScreen = () => {
     total_spent: 0,
     active_campaigns: 0,
     total_plays: 0,
-    average_engagement: 0
+    average_engagement: 0,
   });
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchPromotionRecords = async (pageNum: number = 1, refresh: boolean = false) => {
+  const fetchPromotionRecords = async (
+    pageNum: number = 1,
+    refresh: boolean = false
+  ) => {
     try {
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) {
@@ -55,7 +59,7 @@ const PromotionRecordScreen = () => {
       }
 
       const response = await fetch(
-        `http://127.0.0.1:8000/users/${userId}/promotion-records?page=${pageNum}&page_size=20`
+        `${BASE_URL}/users/${userId}/promotion-records?page=${pageNum}&page_size=20`
       );
       const data = await response.json();
 
@@ -63,7 +67,7 @@ const PromotionRecordScreen = () => {
         if (refresh) {
           setRecords(data.data.records);
         } else {
-          setRecords(prev => [...prev, ...data.data.records]);
+          setRecords((prev) => [...prev, ...data.data.records]);
         }
         setSummary(data.data.summary);
         setHasMore(pageNum < data.data.pagination.total_pages);
@@ -114,28 +118,32 @@ const PromotionRecordScreen = () => {
             {item.music_title || 'Untitled'}
           </Text>
         </View>
-        <Text style={[
-          styles.recordStatus,
-          { 
-            color: item.status === 'completed' ? '#4CAF50' : 
-                   item.status === 'active' ? '#2196F3' : '#FF9800' 
-          }
-        ]}>
+        <Text
+          style={[
+            styles.recordStatus,
+            {
+              color:
+                item.status === 'completed'
+                  ? '#4CAF50'
+                  : item.status === 'active'
+                  ? '#2196F3'
+                  : '#FF9800',
+            },
+          ]}
+        >
           {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
         </Text>
       </View>
-      
+
       <View style={styles.recordDetails}>
         <Text style={styles.recordAmount}>$ {item.amount.toFixed(2)}</Text>
         <Text style={styles.recordDate}>
           {new Date(item.start_date).toLocaleDateString()}
         </Text>
       </View>
-      
+
       <View style={styles.recordInfo}>
-        <Text style={styles.recordInfoText}>
-          Duration: {item.duration}
-        </Text>
+        <Text style={styles.recordInfoText}>Duration: {item.duration}</Text>
         <Text style={styles.recordInfoText}>
           Current Plays: {formatNumber(item.actual_plays)}
         </Text>
@@ -146,7 +154,10 @@ const PromotionRecordScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <BackIcon width={24} height={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Promotion Records</Text>
@@ -156,7 +167,9 @@ const PromotionRecordScreen = () => {
       <View style={styles.summaryContainer}>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Total Spent</Text>
-          <Text style={styles.summaryValue}>$ {summary.total_spent.toFixed(2)}</Text>
+          <Text style={styles.summaryValue}>
+            $ {summary.total_spent.toFixed(2)}
+          </Text>
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryItem}>
@@ -166,14 +179,16 @@ const PromotionRecordScreen = () => {
         <View style={styles.summaryDivider} />
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Total Plays</Text>
-          <Text style={styles.summaryValue}>{formatNumber(summary.total_plays)}</Text>
+          <Text style={styles.summaryValue}>
+            {formatNumber(summary.total_plays)}
+          </Text>
         </View>
       </View>
 
       <FlatList
         data={records}
         renderItem={renderPromotionItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -289,7 +304,5 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 });
-
-
 
 export default PromotionRecordScreen;

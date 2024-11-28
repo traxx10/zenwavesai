@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import SearchIcon from '../assets/icons/search.svg';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import HeartOutlineIcon from '../assets/icons/heart-outline.svg';
 import HeartFilledIcon from '../assets/icons/heart-filled.svg';
+import { BASE_URL } from '@/utils/apis';
 
 interface RecommendedMusic {
   id: string;
@@ -27,16 +37,31 @@ interface FavoriteMusic {
 }
 
 const mixes = [
-  { id: '1', name: 'Meditation', image: require('../assets/images/mixes1.png') },
-  { id: '2', name: 'Psychedelic', image: require('../assets/images/mixes2.png') },
+  {
+    id: '1',
+    name: 'Meditation',
+    image: require('../assets/images/mixes1.png'),
+  },
+  {
+    id: '2',
+    name: 'Psychedelic',
+    image: require('../assets/images/mixes2.png'),
+  },
   { id: '3', name: 'Brainwave', image: require('../assets/images/mixes3.png') },
-  { id: '4', name: 'White Noise', image: require('../assets/images/mixes4.png') },
+  {
+    id: '4',
+    name: 'White Noise',
+    image: require('../assets/images/mixes4.png'),
+  },
   { id: '5', name: 'Sleep', image: require('../assets/images/mixes5.png') },
-  { id: '6', name: 'Relaxation', image: require('../assets/images/mixes6.png') },
+  {
+    id: '6',
+    name: 'Relaxation',
+    image: require('../assets/images/mixes6.png'),
+  },
   { id: '7', name: 'Pet', image: require('../assets/images/mixes7.png') },
   { id: '8', name: 'Baby', image: require('../assets/images/mixes8.png') },
   { id: '9', name: 'Focus', image: require('../assets/images/mixes9.png') },
-
 ];
 
 const recentListening = [
@@ -45,23 +70,45 @@ const recentListening = [
 ];
 
 const playlists = [
-  { id: '1', title: 'Night city vibes', songs: '20 Songs', image: require('../assets/images/playlist1.png') },
-  { id: '2', title: 'Psychedelic Album', songs: '50 Songs', image: require('../assets/images/playlist2.png') },
+  {
+    id: '1',
+    title: 'Night city vibes',
+    songs: '20 Songs',
+    image: require('../assets/images/playlist1.png'),
+  },
+  {
+    id: '2',
+    title: 'Psychedelic Album',
+    songs: '50 Songs',
+    image: require('../assets/images/playlist2.png'),
+  },
 ];
 
 const favorites = [
-  { id: '1', name: 'That day with you', artist: 'The cru', image: require('../assets/images/fav1.png') },
-  { id: '2', name: 'That day with you', artist: 'The cru', image: require('../assets/images/fav2.png') },
+  {
+    id: '1',
+    name: 'That day with you',
+    artist: 'The cru',
+    image: require('../assets/images/fav1.png'),
+  },
+  {
+    id: '2',
+    name: 'That day with you',
+    artist: 'The cru',
+    image: require('../assets/images/fav2.png'),
+  },
 ];
 
 export default function DiscoverScreen() {
   const router = useRouter();
   const [topCreators, setTopCreators] = useState([]);
-  const [recommendedMusic, setRecommendedMusic] = useState<RecommendedMusic[]>([]);
+  const [recommendedMusic, setRecommendedMusic] = useState<RecommendedMusic[]>(
+    []
+  );
   const [searchText, setSearchText] = useState('');
   const [favoriteMusic, setFavoriteMusic] = useState<FavoriteMusic[]>([]);
   const [playlists, setPlaylists] = useState<any[]>([]);
-  
+
   useEffect(() => {
     fetchTopCreators();
     fetchRecommendedMusic();
@@ -71,7 +118,7 @@ export default function DiscoverScreen() {
 
   const fetchTopCreators = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/top-creators?limit=10');
+      const response = await fetch(`${BASE_URL}/top-creators?limit=10`);
       const data = await response.json();
       if (data.status === 'success') {
         setTopCreators(data.data.creators);
@@ -83,8 +130,9 @@ export default function DiscoverScreen() {
 
   const fetchRecommendedMusic = async () => {
     try {
-      const userId = await AsyncStorage.getItem('userId') || 'default-user-id';
-      const response = await fetch(`http://127.0.0.1:8000/recommended-music/${userId}`);
+      const userId =
+        (await AsyncStorage.getItem('userId')) || 'default-user-id';
+      const response = await fetch(`${BASE_URL}/recommended-music/${userId}`);
       const data = await response.json();
       if (data.status === 'success') {
         setRecommendedMusic(data.data.music_list);
@@ -99,7 +147,7 @@ export default function DiscoverScreen() {
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) return;
 
-      const response = await fetch(`http://127.0.0.1:8000/user-favorites/${userId}`);
+      const response = await fetch(`${BASE_URL}/user-favorites/${userId}`);
       const data = await response.json();
       if (data.status === 'success') {
         setFavoriteMusic(data.data.favorites);
@@ -111,7 +159,7 @@ export default function DiscoverScreen() {
 
   const fetchRandomPlaylists = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/playlists/random?limit=10');
+      const response = await fetch(`${BASE_URL}/playlists/random?limit=10`);
       const data = await response.json();
       if (data.status === 'success') {
         setPlaylists(data.data.playlists);
@@ -125,7 +173,9 @@ export default function DiscoverScreen() {
     setSearchText(text);
     if (text.trim()) {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/search-music/${encodeURIComponent(text)}`);
+        const response = await fetch(
+          `${BASE_URL}/search-music/${encodeURIComponent(text)}`
+        );
         const data = await response.json();
         if (data.status === 'success') {
           // 处理搜索结果
@@ -139,66 +189,64 @@ export default function DiscoverScreen() {
 
   const renderCreator = ({ item }: { item: any }) => (
     <TouchableOpacity
-      onPress={() => router.push({
-        pathname: '/userprofile',
-        params: { 
-          userId: item.id,
-          fromScreen: 'discover'
-        }
-      })}
+      onPress={() =>
+        router.push({
+          pathname: '/userprofile',
+          params: {
+            userId: item.id,
+            fromScreen: 'discover',
+          },
+        })
+      }
     >
       <View style={styles.creatorContainer}>
-        <Image 
-        source={{ uri: item.avatar_url }} 
-        style={styles.creatorImage} 
-      />
-      <View>
-        <Text style={styles.creatorName}>{item.name}</Text>
-        <Text style={styles.creatorGenre}>{item.total_songs}</Text>
-      </View>
+        <Image source={{ uri: item.avatar_url }} style={styles.creatorImage} />
+        <View>
+          <Text style={styles.creatorName}>{item.name}</Text>
+          <Text style={styles.creatorGenre}>{item.total_songs}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
 
   const renderFavoriteItem = ({ item }: { item: FavoriteMusic }) => (
     <TouchableOpacity
-      onPress={() => router.push({
-        pathname: '/musicplayer',
-        params: { id: item.id }
-      })}
+      onPress={() =>
+        router.push({
+          pathname: '/musicplayer',
+          params: { id: item.id },
+        })
+      }
       style={styles.favoriteContainer}
     >
-      <Image 
-        source={{ uri: item.cover_url }} 
-        style={styles.favoriteImage} 
-      />
+      <Image source={{ uri: item.cover_url }} style={styles.favoriteImage} />
       <View style={styles.favoriteContent}>
         <Text style={styles.favoriteName}>{item.title}</Text>
         <Text style={styles.favoriteArtist}>{item.creator_name}</Text>
       </View>
-      <HeartFilledIcon 
-        width={24} 
-        height={24} 
-        fill="#FF0000"  // 红色心形
+      <HeartFilledIcon
+        width={24}
+        height={24}
+        fill="#FF0000" // 红色心形
         style={styles.heartIcon}
       />
     </TouchableOpacity>
   );
 
   return (
-    <ScrollView 
-      style={styles.container} 
+    <ScrollView
+      style={styles.container}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.header}>Browse Functional Music</Text>
-      
+
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <SearchIcon width={20} height={20} style={styles.searchIcon} />
-        <TextInput 
-          style={styles.searchBox} 
-          placeholder="Search" 
+        <TextInput
+          style={styles.searchBox}
+          placeholder="Search"
           placeholderTextColor="#999"
           value={searchText}
           onChangeText={handleSearch}
@@ -206,12 +254,25 @@ export default function DiscoverScreen() {
       </View>
 
       {/* Latest Rankings - Banner Slider */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bannerContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.bannerContainer}
+      >
         <TouchableOpacity onPress={() => router.push('/musicranking')}>
-          <Image source={require('../assets/images/banner1.png')} style={styles.bannerImage} />
+          <Image
+            source={require('../assets/images/banner1.png')}
+            style={styles.bannerImage}
+          />
         </TouchableOpacity>
-        <Image source={require('../assets/images/banner2.png')} style={styles.bannerImage} />
-        <Image source={require('../assets/images/banner3.png')} style={styles.bannerImage} />
+        <Image
+          source={require('../assets/images/banner2.png')}
+          style={styles.bannerImage}
+        />
+        <Image
+          source={require('../assets/images/banner3.png')}
+          style={styles.bannerImage}
+        />
       </ScrollView>
 
       {/* Top Creators */}
@@ -235,15 +296,17 @@ export default function DiscoverScreen() {
       <FlatList
         data={mixes}
         renderItem={({ item }) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.mixContainer}
-            onPress={() => router.push({
-              pathname: '/functionalmusicplaylist',
-              params: { 
-                name: item.name,
-                imageUri: Image.resolveAssetSource(item.image).uri
-              }
-            })}
+            onPress={() =>
+              router.push({
+                pathname: '/functionalmusicplaylist',
+                params: {
+                  name: item.name,
+                  imageUri: Image.resolveAssetSource(item.image).uri,
+                },
+              })
+            }
           >
             <Image source={item.image} style={styles.mixImage} />
             <Text style={styles.mixName}>{item.name}</Text>
@@ -260,15 +323,17 @@ export default function DiscoverScreen() {
       <FlatList
         data={recommendedMusic}
         renderItem={({ item }) => (
-          <TouchableOpacity 
-            onPress={() => router.push({
-              pathname: '/musicplayer',
-              params: { id: item.id }
-            })}
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: '/musicplayer',
+                params: { id: item.id },
+              })
+            }
           >
-            <Image 
-              source={{ uri: item.cover_url }} 
-              style={styles.recentImage} 
+            <Image
+              source={{ uri: item.cover_url }}
+              style={styles.recentImage}
             />
           </TouchableOpacity>
         )}
@@ -288,25 +353,27 @@ export default function DiscoverScreen() {
       <FlatList
         data={playlists}
         renderItem={({ item }) => (
-          <TouchableOpacity 
-            onPress={() => router.push({
-              pathname: '/musicplaylist',
-              params: { 
-                playlistId: item.id 
-              }
-            })}
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: '/musicplaylist',
+                params: {
+                  playlistId: item.id,
+                },
+              })
+            }
             style={styles.playlistContainer}
           >
-            <Image 
-              source={{ uri: item.cover_url || 'https://via.placeholder.com/215' }} 
-              style={styles.playlistImage} 
+            <Image
+              source={{
+                uri: item.cover_url || 'https://via.placeholder.com/215',
+              }}
+              style={styles.playlistImage}
             />
             <Text style={styles.playlistTitle} numberOfLines={1}>
               {item.title}
             </Text>
-            <Text style={styles.playlistSongs}>
-              {item.total_tracks} Songs
-            </Text>
+            <Text style={styles.playlistSongs}>{item.total_tracks} Songs</Text>
           </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
@@ -328,7 +395,7 @@ export default function DiscoverScreen() {
         <FlatList
           data={favoriteMusic}
           renderItem={renderFavoriteItem}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           scrollEnabled={false}
           ListEmptyComponent={() => (
             <Text style={styles.emptyText}>No favorites yet</Text>
@@ -414,7 +481,6 @@ const styles = StyleSheet.create({
   },
   creatorsList: {
     paddingLeft: 16,
-
   },
   creatorContainer: {
     flexDirection: 'row',
@@ -504,7 +570,7 @@ const styles = StyleSheet.create({
   },
   favoriteContent: {
     flex: 1,
-    marginRight: 10,  // 为心形图标留出空间
+    marginRight: 10, // 为心形图标留出空间
   },
   favoriteName: {
     fontSize: 16,
@@ -516,7 +582,7 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   heartIcon: {
-    marginLeft: 'auto',  // 将心形图标推到右边
+    marginLeft: 'auto', // 将心形图标推到右边
   },
   recommendedMusicContainer: {
     marginRight: 15,
@@ -530,7 +596,7 @@ const styles = StyleSheet.create({
     maxWidth: 150,
   },
   favoritesContainer: {
-    paddingHorizontal: 0,  // 移除水平内边距，因为列表项已经有了
+    paddingHorizontal: 0, // 移除水平内边距，因为列表项已经有了
     marginBottom: 0,
   },
   emptyText: {
@@ -538,5 +604,4 @@ const styles = StyleSheet.create({
     color: '#666',
     padding: 20,
   },
-
 });

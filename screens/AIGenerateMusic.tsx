@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+} from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import BackIcon from '../assets/icons/back.svg'; // Custom SVG icon
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCirclePlus, faPlus } from '@fortawesome/free-solid-svg-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
-const API_BASE_URL = 'http://127.0.0.1:8000'; // Development environment
+const API_BASE_URL = BASE_URL; // Development environment
 // const API_BASE_URL = 'https://your-production-api.com'; // Production environment
 
 interface Playlist {
@@ -16,7 +25,12 @@ interface Playlist {
 }
 
 export default function AIGenerateMusicScreen() {
-  const { category = '', title = '', playlist = '', playlistId = '' } = useLocalSearchParams();
+  const {
+    category = '',
+    title = '',
+    playlist = '',
+    playlistId = '',
+  } = useLocalSearchParams();
   const router = useRouter();
 
   const [prompt, setPrompt] = useState('');
@@ -25,10 +39,19 @@ export default function AIGenerateMusicScreen() {
   const [customTag, setCustomTag] = useState('');
   const [duration, setDuration] = useState('10');
   const [tags, setTags] = useState([
-    'White Noise', 'Deep Sleep', 'Meditation', 'Focus', 'Relaxation', 'Brainwave', 'Sound Therapy', 'Stress Relief'
+    'White Noise',
+    'Deep Sleep',
+    'Meditation',
+    'Focus',
+    'Relaxation',
+    'Brainwave',
+    'Sound Therapy',
+    'Stress Relief',
   ]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(
+    null
+  );
   const [showNewPlaylistInput, setShowNewPlaylistInput] = useState(false);
   const [newPlaylistTitle, setNewPlaylistTitle] = useState('');
 
@@ -36,7 +59,9 @@ export default function AIGenerateMusicScreen() {
     const fetchPlaylists = async () => {
       try {
         const userId = await AsyncStorage.getItem('userId');
-        const response = await fetch(`${API_BASE_URL}/user-playlists/${userId}`);
+        const response = await fetch(
+          `${API_BASE_URL}/user-playlists/${userId}`
+        );
         const data = await response.json();
         if (data.status === 'success') {
           setPlaylists(data.data.playlists);
@@ -55,7 +80,7 @@ export default function AIGenerateMusicScreen() {
       title,
       playlist: playlist ? JSON.parse(playlist as string) : null,
       playlistId,
-      raw: { category, title, playlist, playlistId }
+      raw: { category, title, playlist, playlistId },
     });
   }, []);
 
@@ -83,7 +108,9 @@ export default function AIGenerateMusicScreen() {
   useEffect(() => {
     const checkNewPlaylist = async () => {
       try {
-        const lastCreatedPlaylistJson = await AsyncStorage.getItem('last_created_playlist');
+        const lastCreatedPlaylistJson = await AsyncStorage.getItem(
+          'last_created_playlist'
+        );
         if (lastCreatedPlaylistJson) {
           const lastCreatedPlaylist = JSON.parse(lastCreatedPlaylistJson);
           setSelectedPlaylist(lastCreatedPlaylist);
@@ -107,7 +134,7 @@ export default function AIGenerateMusicScreen() {
         duration,
         newPlaylistTitle,
         selectedPlaylist,
-        ...updates
+        ...updates,
       };
       await AsyncStorage.setItem('temp_music_form', JSON.stringify(formData));
     } catch (error) {
@@ -139,24 +166,29 @@ export default function AIGenerateMusicScreen() {
     const trimmedInput = customTag.trim();
     if (!trimmedInput) return;
 
-    const newTags = trimmedInput.split(',').map(tag => tag.trim()).filter(tag => tag);
-    
-    newTags.forEach(newTag => {
-      const existingTag = tags.find(tag => tag.toLowerCase() === newTag.toLowerCase());
+    const newTags = trimmedInput
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
+
+    newTags.forEach((newTag) => {
+      const existingTag = tags.find(
+        (tag) => tag.toLowerCase() === newTag.toLowerCase()
+      );
       if (existingTag) {
         if (!selectedTags.includes(existingTag)) {
-          setSelectedTags(prevSelected => [existingTag, ...prevSelected]);
+          setSelectedTags((prevSelected) => [existingTag, ...prevSelected]);
         }
-        setTags(prevTags => [
+        setTags((prevTags) => [
           existingTag,
-          ...prevTags.filter(tag => tag !== existingTag)
+          ...prevTags.filter((tag) => tag !== existingTag),
         ]);
       } else {
-        setTags(prevTags => [newTag, ...prevTags]);
-        setSelectedTags(prevSelected => [newTag, ...prevSelected]);
+        setTags((prevTags) => [newTag, ...prevTags]);
+        setSelectedTags((prevSelected) => [newTag, ...prevSelected]);
       }
     });
-    
+
     setCustomTag('');
   };
 
@@ -183,11 +215,10 @@ export default function AIGenerateMusicScreen() {
     router.push({
       pathname: '/createplaylist',
       params: {
-        
-        title: newPlaylistTitle
-      }
+        title: newPlaylistTitle,
+      },
     });
-    
+
     // 清空输入并隐藏输入框
     setNewPlaylistTitle('');
     setShowNewPlaylistInput(false);
@@ -228,7 +259,10 @@ export default function AIGenerateMusicScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Header with Back Button */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <BackIcon width={24} height={24} fill="#000" />
           </TouchableOpacity>
           <Text style={styles.headerText}>AI Generate Music</Text>
@@ -261,14 +295,28 @@ export default function AIGenerateMusicScreen() {
         {/* Functional Tags Section */}
         <View style={styles.inputGroup}>
           <Text style={styles.inputLabel}>Functional Tags</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tagsContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tagsContainer}
+          >
             {tags.map((tag, index) => (
               <TouchableOpacity
                 key={index}
-                style={[styles.tag, selectedTags.includes(tag) && styles.selectedTag]}
+                style={[
+                  styles.tag,
+                  selectedTags.includes(tag) && styles.selectedTag,
+                ]}
                 onPress={() => toggleTagSelection(tag)}
               >
-                <Text style={[styles.tagText, selectedTags.includes(tag) && styles.selectedTagText]}>{tag}</Text>
+                <Text
+                  style={[
+                    styles.tagText,
+                    selectedTags.includes(tag) && styles.selectedTagText,
+                  ]}
+                >
+                  {tag}
+                </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -279,7 +327,10 @@ export default function AIGenerateMusicScreen() {
               value={customTag}
               onChangeText={setCustomTag}
             />
-            <TouchableOpacity onPress={handleCustomTagAdd} style={styles.customTagButton}>
+            <TouchableOpacity
+              onPress={handleCustomTagAdd}
+              style={styles.customTagButton}
+            >
               <FontAwesomeIcon icon={faCirclePlus} size={24} color="#000" />
             </TouchableOpacity>
           </View>
@@ -305,14 +356,16 @@ export default function AIGenerateMusicScreen() {
                 key={playlist.id}
                 style={[
                   styles.playlistItem,
-                  selectedPlaylist?.id === playlist.id && styles.selectedPlaylist
+                  selectedPlaylist?.id === playlist.id &&
+                    styles.selectedPlaylist,
                 ]}
                 onPress={() => handlePlaylistSelect(playlist)}
               >
-                <Text 
+                <Text
                   style={[
                     styles.playlistTitle,
-                    selectedPlaylist?.id === playlist.id && styles.selectedPlaylistText
+                    selectedPlaylist?.id === playlist.id &&
+                      styles.selectedPlaylistText,
                   ]}
                   numberOfLines={1}
                 >

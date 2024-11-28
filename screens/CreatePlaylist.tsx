@@ -15,8 +15,9 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import BackIcon from '../assets/icons/back.svg';
+import { BASE_URL } from '@/utils/apis';
 
-const API_BASE_URL = 'http://127.0.0.1:8000'; // 替换为您的生产环境 URL
+const API_BASE_URL = BASE_URL; // 替换为您的生产环境 URL
 
 export default function CreatePlaylistScreen() {
   const { title } = useLocalSearchParams();
@@ -29,16 +30,18 @@ export default function CreatePlaylistScreen() {
   useEffect(() => {
     const loadSavedForm = async () => {
       try {
-        const savedDescription = await AsyncStorage.getItem('temp_playlist_description');
+        const savedDescription = await AsyncStorage.getItem(
+          'temp_playlist_description'
+        );
         const savedImage = await AsyncStorage.getItem('temp_playlist_image');
-        
+
         if (savedDescription) setDescription(savedDescription);
         if (savedImage) setSelectedImage(savedImage);
       } catch (error) {
         console.error('加载表单数据失败:', error);
       }
     };
-    
+
     loadSavedForm();
   }, []);
 
@@ -52,9 +55,13 @@ export default function CreatePlaylistScreen() {
   };
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert('Permission required', 'Please allow access to photos to select a cover image.');
+      Alert.alert(
+        'Permission required',
+        'Please allow access to photos to select a cover image.'
+      );
       return;
     }
 
@@ -98,7 +105,7 @@ export default function CreatePlaylistScreen() {
       const formData = new FormData();
       formData.append('title', title as string);
       formData.append('description', description);
-      
+
       // 添加图片文件
       const response = await fetch(selectedImage);
       const blob = await response.blob();
@@ -109,26 +116,32 @@ export default function CreatePlaylistScreen() {
       } as any);
 
       // 修改为正确的 API 端点
-      const responseAPI = await fetch(`${API_BASE_URL}/users/${userId}/playlists`, {
-        method: 'POST',
-        body: formData,
-      });
+      const responseAPI = await fetch(
+        `${API_BASE_URL}/users/${userId}/playlists`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
 
       if (responseAPI.ok) {
         const newPlaylist = await responseAPI.json();
-        
+
         // 清除临时表单数据
         await AsyncStorage.multiRemove([
           'temp_playlist_description',
-          'temp_playlist_image'
+          'temp_playlist_image',
         ]);
 
         // 保存新创建的播放列表信息
-        await AsyncStorage.setItem('last_created_playlist', JSON.stringify({
-          id: newPlaylist.id,
-          title: title,
-          // 其他需要的播放列表信息...
-        }));
+        await AsyncStorage.setItem(
+          'last_created_playlist',
+          JSON.stringify({
+            id: newPlaylist.id,
+            title: title,
+            // 其他需要的播放列表信息...
+          })
+        );
 
         Alert.alert('Success', '播放列表创建成功！');
         router.back();
@@ -147,8 +160,8 @@ export default function CreatePlaylistScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => router.back()} 
+        <TouchableOpacity
+          onPress={() => router.back()}
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -178,7 +191,11 @@ export default function CreatePlaylistScreen() {
         <View style={styles.uploadContainer}>
           <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
             <Image
-              source={selectedImage ? { uri: selectedImage } : require('../assets/images/cover.png')}
+              source={
+                selectedImage
+                  ? { uri: selectedImage }
+                  : require('../assets/images/cover.png')
+              }
               style={styles.image}
             />
           </TouchableOpacity>
@@ -229,13 +246,12 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 28,
-    
   },
   inputLabel: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
-    
+
     marginBottom: 10,
   },
   readOnlyText: {

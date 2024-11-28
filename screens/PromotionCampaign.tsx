@@ -12,6 +12,7 @@ import Slider from '@react-native-community/slider';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import BackIcon from '../assets/icons/back.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/utils/apis';
 
 // 添加类型定义
 type DurationKey = '7 Days' | '30 Days' | '90 Days' | '180 Days' | '365 Days';
@@ -81,13 +82,18 @@ const PromotionCampaignScreen: React.FC = () => {
 
   // 获取当前选中金额可用的天数
   const getAvailableDurations = () => {
-    return priceAvailableDays[selectedAmount as keyof typeof priceAvailableDays] || [];
+    return (
+      priceAvailableDays[selectedAmount as keyof typeof priceAvailableDays] ||
+      []
+    );
   };
 
   // 获取当前选择的预期播放量
   const getEstimatedPlays = () => {
     const availableDurations = getAvailableDurations();
-    const selectedDurationText = availableDurations[selectedDuration] as DurationKey;
+    const selectedDurationText = availableDurations[
+      selectedDuration
+    ] as DurationKey;
     return playEstimates[selectedAmount]?.[selectedDurationText] || 0;
   };
 
@@ -109,11 +115,11 @@ const PromotionCampaignScreen: React.FC = () => {
   const handleNext = async () => {
     try {
       const userId = await AsyncStorage.getItem('userId');
-      
+
       const availableDurations = getAvailableDurations();
       const selectedDurationText = availableDurations[selectedDuration];
       const estimatedPlays = getEstimatedPlays();
-      
+
       if (!musicId) {
         console.error('musicId is missing');
         Alert.alert('Error', 'Missing music ID');
@@ -126,37 +132,49 @@ const PromotionCampaignScreen: React.FC = () => {
         amount: selectedAmount,
         duration: selectedDurationText,
         estimated_plays: estimatedPlays,
-        status: 'pending'
+        status: 'pending',
       };
 
       console.log('发送请求体:', requestBody);
 
-      const response = await fetch(`http://127.0.0.1:8000/create-promotion-campaign/${userId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      });
+      const response = await fetch(
+        `${BASE_URL}/create-promotion-campaign/${userId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const data = await response.json();
       console.log('API响应:', data);
-      
+
       if (response.ok) {
-        console.log('准备导航到 promotioncomplete, campaignId:', data.data.campaign_id);
+        console.log(
+          '准备导航到 promotioncomplete, campaignId:',
+          data.data.campaign_id
+        );
         router.replace({
           pathname: '/promotioncomplete' as any,
-          params: { 
-            campaignId: data.data.campaign_id 
-          }
+          params: {
+            campaignId: data.data.campaign_id,
+          },
         });
       } else {
         console.error('API错误响应:', data.detail);
-        Alert.alert('Error', data.detail || 'Failed to create promotion campaign');
+        Alert.alert(
+          'Error',
+          data.detail || 'Failed to create promotion campaign'
+        );
       }
     } catch (error) {
       console.error('完整错误信息:', error);
-      console.error('错误堆栈:', error instanceof Error ? error.stack : '无堆栈信息');
+      console.error(
+        '错误堆栈:',
+        error instanceof Error ? error.stack : '无堆栈信息'
+      );
       Alert.alert('Error', 'Failed to create promotion campaign');
     }
   };
@@ -169,7 +187,10 @@ const PromotionCampaignScreen: React.FC = () => {
 
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
             <BackIcon width={24} height={24} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Promotion Campaign</Text>
@@ -194,7 +215,12 @@ const PromotionCampaignScreen: React.FC = () => {
               ]}
               onPress={() => handleAmountSelect(item)}
             >
-              <Text style={[styles.amountText, selectedAmount === item && styles.selectedAmountText]}>
+              <Text
+                style={[
+                  styles.amountText,
+                  selectedAmount === item && styles.selectedAmountText,
+                ]}
+              >
                 ${item.toFixed(2)}
               </Text>
             </TouchableOpacity>
@@ -203,7 +229,9 @@ const PromotionCampaignScreen: React.FC = () => {
 
         {/* 时长选择 */}
         <View style={styles.durationContainer}>
-          <Text style={styles.durationLabel}>Select your promotion duration</Text>
+          <Text style={styles.durationLabel}>
+            Select your promotion duration
+          </Text>
           <Slider
             style={styles.slider}
             minimumValue={0}
@@ -226,12 +254,15 @@ const PromotionCampaignScreen: React.FC = () => {
 
         {/* 修改提示信息 */}
         <Text style={styles.infoText}>
-          Typically, this can generate around {formatNumber(getEstimatedPlays())} plays.
+          Typically, this can generate around{' '}
+          {formatNumber(getEstimatedPlays())} plays.
         </Text>
 
         {/* 总金额和下一步按钮 */}
         <View style={styles.footer}>
-          <Text style={styles.totalText}>Total : ${selectedAmount.toFixed(2)}</Text>
+          <Text style={styles.totalText}>
+            Total : ${selectedAmount.toFixed(2)}
+          </Text>
           <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
             <Text style={styles.buttonText}>Next</Text>
           </TouchableOpacity>
@@ -263,7 +294,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
@@ -302,7 +332,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   durationContainer: {
-    
     marginBottom: 20,
     alignItems: 'center',
     position: 'absolute',
@@ -330,7 +359,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   durationText: {
-    
     fontSize: 12,
     color: '#666',
   },

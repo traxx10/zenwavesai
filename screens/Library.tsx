@@ -23,6 +23,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Audio } from 'expo-av';
 import { useLocalSearchParams } from 'expo-router';
+import { BASE_URL } from '@/utils/apis';
 
 interface AudioItem {
   id: string;
@@ -36,13 +37,59 @@ interface AudioItem {
 }
 
 const audioData = [
-  { id: '1', title: 'project_meeting', date: '5 Aug 2022', time: '09:30 am', duration: '00:28:14', isPlaying: false, output_url: 'http://example.com/audio1.mp3', created_at: '2022-08-05T09:30:00' },
-  { id: '2', title: 'singer_interview', date: '13 Aug 2022', time: '02:00 pm', duration: '01:58:17', isPlaying: false, output_url: 'http://example.com/audio2.mp3', created_at: '2022-08-13T14:00:00' },
-  { id: '3', title: 'customer_meeting', date: '2 Aug 2022', time: '10:45 am', duration: '00:16:35', isPlaying: false, output_url: 'http://example.com/audio3.mp3', created_at: '2022-08-02T10:45:00' },
-  { id: '4', title: 'team_meeting', date: '10 Aug 2022', time: '03:15 pm', duration: '00:34:26', isPlaying: false, output_url: 'http://example.com/audio4.mp3', created_at: '2022-08-10T15:15:00' },
-  { id: '5', title: 'designer_interview', date: '8 Aug 2022', time: '04:30 pm', duration: '00:57:49', isPlaying: false, output_url: 'http://example.com/audio5.mp3', created_at: '2022-08-08T16:30:00' },
+  {
+    id: '1',
+    title: 'project_meeting',
+    date: '5 Aug 2022',
+    time: '09:30 am',
+    duration: '00:28:14',
+    isPlaying: false,
+    output_url: 'http://example.com/audio1.mp3',
+    created_at: '2022-08-05T09:30:00',
+  },
+  {
+    id: '2',
+    title: 'singer_interview',
+    date: '13 Aug 2022',
+    time: '02:00 pm',
+    duration: '01:58:17',
+    isPlaying: false,
+    output_url: 'http://example.com/audio2.mp3',
+    created_at: '2022-08-13T14:00:00',
+  },
+  {
+    id: '3',
+    title: 'customer_meeting',
+    date: '2 Aug 2022',
+    time: '10:45 am',
+    duration: '00:16:35',
+    isPlaying: false,
+    output_url: 'http://example.com/audio3.mp3',
+    created_at: '2022-08-02T10:45:00',
+  },
+  {
+    id: '4',
+    title: 'team_meeting',
+    date: '10 Aug 2022',
+    time: '03:15 pm',
+    duration: '00:34:26',
+    isPlaying: false,
+    output_url: 'http://example.com/audio4.mp3',
+    created_at: '2022-08-10T15:15:00',
+  },
+  {
+    id: '5',
+    title: 'designer_interview',
+    date: '8 Aug 2022',
+    time: '04:30 pm',
+    duration: '00:57:49',
+    isPlaying: false,
+    output_url: 'http://example.com/audio5.mp3',
+    created_at: '2022-08-08T16:30:00',
+  },
 ];
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = BASE_URL;
+
 const generateWaveform = () => {
   const bars = [];
   for (let i = 0; i < 80; i++) {
@@ -90,7 +137,7 @@ export default function LibraryScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const params = useLocalSearchParams<{ draft_list_id: string }>();
   const draft_list_id = params?.draft_list_id;
-  
+
   const [audios, setAudios] = useState<AudioItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAudios, setSelectedAudios] = useState<AudioItem[]>([]);
@@ -115,7 +162,7 @@ export default function LibraryScreen() {
         const response = await fetch(
           `${API_URL}/draft-music-library/${userId}`
         );
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch audio library');
         }
@@ -124,17 +171,19 @@ export default function LibraryScreen() {
         console.log('获取到的音频数据:', data);
 
         if (data.status === 'success') {
-          const formattedAudios: AudioItem[] = data.data.music_list.map((music: any) => ({
-            id: music.id,
-            title: music.title,
-            duration: music.duration,
-            output_url: music.output_url,
-            isPlaying: false,
-            date: new Date(music.created_at).toLocaleDateString(),
-            time: new Date(music.created_at).toLocaleTimeString(),
-            created_at: music.created_at,
-          }));
-          
+          const formattedAudios: AudioItem[] = data.data.music_list.map(
+            (music: any) => ({
+              id: music.id,
+              title: music.title,
+              duration: music.duration,
+              output_url: music.output_url,
+              isPlaying: false,
+              date: new Date(music.created_at).toLocaleDateString(),
+              time: new Date(music.created_at).toLocaleTimeString(),
+              created_at: music.created_at,
+            })
+          );
+
           setAudios(formattedAudios);
         }
       } catch (error) {
@@ -152,14 +201,14 @@ export default function LibraryScreen() {
   useEffect(() => {
     const groupAudiosByMonth = () => {
       const groups: { [key: string]: AudioItem[] } = {};
-      
-      audios.forEach(audio => {
+
+      audios.forEach((audio) => {
         const date = new Date(audio.created_at);
-        const monthYear = date.toLocaleString('en-US', { 
-          year: 'numeric', 
-          month: 'long'
+        const monthYear = date.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'long',
         });
-        
+
         if (!groups[monthYear]) {
           groups[monthYear] = [];
         }
@@ -169,7 +218,11 @@ export default function LibraryScreen() {
       // 转换为数组并按日期排序
       const sortedGroups = Object.entries(groups)
         .map(([date, items]) => ({ date, items }))
-        .sort((a, b) => new Date(b.items[0].created_at).getTime() - new Date(a.items[0].created_at).getTime());
+        .sort(
+          (a, b) =>
+            new Date(b.items[0].created_at).getTime() -
+            new Date(a.items[0].created_at).getTime()
+        );
 
       setGroupedAudios(sortedGroups);
     };
@@ -190,15 +243,15 @@ export default function LibraryScreen() {
 
     try {
       const userId = await AsyncStorage.getItem('userId');
-      const musicIds = selectedAudios.map(audio => audio.id).join(',');
-      
+      const musicIds = selectedAudios.map((audio) => audio.id).join(',');
+
       const response = await fetch(
         `${API_URL}/users/${userId}/draft-list/${draft_list_id}/music-library/${musicIds}/add-music`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-          }
+          },
         }
       );
 
@@ -207,7 +260,7 @@ export default function LibraryScreen() {
       }
 
       const result = await response.json();
-      
+
       if (result.status === 'success') {
         const newClips = selectedAudios.map((audio, index) => {
           return {
@@ -219,18 +272,17 @@ export default function LibraryScreen() {
             volume: 1,
             fadeIn: 0,
             fadeOut: 0,
-            output_url: audio.output_url || ''
+            output_url: audio.output_url || '',
           };
         });
 
         navigation.navigate('musicedit', {
           draft_list_id: result.data.draft_list_id,
-          newClips
+          newClips,
         });
       } else {
         throw new Error(result.message || 'Failed to add music');
       }
-
     } catch (error) {
       console.error('添加音频失败:', error);
       Alert.alert('错误', '添加音频失败');
@@ -240,7 +292,9 @@ export default function LibraryScreen() {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: Animated.event([null, { dy: slideAnim }], { useNativeDriver: false }),
+      onPanResponderMove: Animated.event([null, { dy: slideAnim }], {
+        useNativeDriver: false,
+      }),
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dy > 50) {
           slideDown();
@@ -273,7 +327,9 @@ export default function LibraryScreen() {
       await sound.pauseAsync();
       setCurrentPlayingId(null);
       setAudios(
-        audios.map((audio) => (audio.id === id ? { ...audio, isPlaying: false } : audio))
+        audios.map((audio) =>
+          audio.id === id ? { ...audio, isPlaying: false } : audio
+        )
       );
       return;
     }
@@ -283,13 +339,18 @@ export default function LibraryScreen() {
         await sound.unloadAsync();
       }
 
-      const { sound: newSound } = await Audio.Sound.createAsync({ uri: output_url }, { shouldPlay: true });
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: output_url },
+        { shouldPlay: true }
+      );
 
       setSound(newSound);
       setCurrentPlayingId(id);
       setAudios(
         audios.map((audio) =>
-          audio.id === id ? { ...audio, isPlaying: true } : { ...audio, isPlaying: false }
+          audio.id === id
+            ? { ...audio, isPlaying: true }
+            : { ...audio, isPlaying: false }
         )
       );
     } catch (error) {
@@ -301,17 +362,27 @@ export default function LibraryScreen() {
     <TouchableOpacity
       style={[
         styles.audioItem,
-        selectedAudios.find((audio) => audio.id === item.id) && styles.audioItemSelected,
+        selectedAudios.find((audio) => audio.id === item.id) &&
+          styles.audioItemSelected,
       ]}
       onPress={() => handleSelectAudio(item)}
     >
       <View style={styles.audioRow}>
-        <TouchableOpacity onPress={() => handlePlayPause(item.id, item.output_url)} style={styles.playButton}>
-          {item.isPlaying ? <PauseIcon width={47} height={47} /> : <PlayIcon width={47} height={47} />}
+        <TouchableOpacity
+          onPress={() => handlePlayPause(item.id, item.output_url)}
+          style={styles.playButton}
+        >
+          {item.isPlaying ? (
+            <PauseIcon width={47} height={47} />
+          ) : (
+            <PlayIcon width={47} height={47} />
+          )}
         </TouchableOpacity>
         <View style={styles.audioInfo}>
           <Text style={styles.audioTitle}>{item.title}</Text>
-          <Text style={styles.audioDetails}>{`${item.date}  ${item.time}`}</Text>
+          <Text
+            style={styles.audioDetails}
+          >{`${item.date}  ${item.time}`}</Text>
         </View>
         <Text style={styles.audioDuration}>{item.duration}</Text>
       </View>
@@ -333,22 +404,33 @@ export default function LibraryScreen() {
 
   const getFormattedDate = () => {
     if (audios.length === 0) return '';
-    
-    const dates = audios.map(audio => new Date(audio.date));
-    const latestDate = new Date(Math.max(...dates.map(date => date.getTime())));
-    const earliestDate = new Date(Math.min(...dates.map(date => date.getTime())));
-    
-    if (latestDate.getMonth() === earliestDate.getMonth() && 
-        latestDate.getFullYear() === earliestDate.getFullYear()) {
-      return latestDate.toLocaleString('en-US', { 
-        year: 'numeric', 
-        month: 'long'
+
+    const dates = audios.map((audio) => new Date(audio.date));
+    const latestDate = new Date(
+      Math.max(...dates.map((date) => date.getTime()))
+    );
+    const earliestDate = new Date(
+      Math.min(...dates.map((date) => date.getTime()))
+    );
+
+    if (
+      latestDate.getMonth() === earliestDate.getMonth() &&
+      latestDate.getFullYear() === earliestDate.getFullYear()
+    ) {
+      return latestDate.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
       });
     }
-    
+
     // 否则显示日期范围
-    return `${earliestDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })} - ${
-      latestDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}`;
+    return `${earliestDate.toLocaleString('en-US', {
+      month: 'long',
+      year: 'numeric',
+    })} - ${latestDate.toLocaleString('en-US', {
+      month: 'long',
+      year: 'numeric',
+    })}`;
   };
 
   return (
@@ -370,7 +452,10 @@ export default function LibraryScreen() {
 
           {isPanelVisible && (
             <Animated.View
-              style={[styles.slideUpPanel, { transform: [{ translateY: slideAnim }] }]}
+              style={[
+                styles.slideUpPanel,
+                { transform: [{ translateY: slideAnim }] },
+              ]}
               {...panResponder.panHandlers}
             >
               <View style={styles.panelHandle} />
@@ -403,9 +488,7 @@ export default function LibraryScreen() {
               <View>
                 <Text style={styles.dateTitle}>{item.date}</Text>
                 {item.items.map((audio) => (
-                  <View key={audio.id}>
-                    {renderAudioItem({ item: audio })}
-                  </View>
+                  <View key={audio.id}>{renderAudioItem({ item: audio })}</View>
                 ))}
               </View>
             )}
@@ -417,8 +500,13 @@ export default function LibraryScreen() {
           <View style={styles.bottomSpacer} />
 
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmSelection}>
-              <Text style={styles.confirmButtonText}>添加选中的音频 ({selectedAudios.length})</Text>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={handleConfirmSelection}
+            >
+              <Text style={styles.confirmButtonText}>
+                添加选中的音频 ({selectedAudios.length})
+              </Text>
             </TouchableOpacity>
           </View>
         </>
