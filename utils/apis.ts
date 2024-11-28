@@ -1,4 +1,4 @@
-const IS_DEV = 0;
+const IS_DEV = 1;
 const IS_STAGING = 1;
 
 export const BASE_URL = IS_DEV
